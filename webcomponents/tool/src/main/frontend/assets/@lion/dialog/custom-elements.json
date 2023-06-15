@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "0.1.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "./index.d.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "LionDialog",
+          "declaration": {
+            "name": "LionDialog",
+            "module": "\"./src/LionDialog.js\""
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "./index.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "LionDialog",
+          "declaration": {
+            "name": "LionDialog",
+            "module": "./src/LionDialog.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "./lion-dialog.d.ts",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "./lion-dialog.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "lion-dialog",
+          "declaration": {
+            "name": "LionDialog",
+            "module": "./src/LionDialog.d.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "./src/LionDialog.d.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "LionDialog",
+          "superclass": {
+            "name": "LionDialog_base",
+            "module": "./src/LionDialog.d.ts"
+          },
+          "members": [
+            {
+              "kind": "field",
+              "name": "__toggle",
+              "privacy": "private"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "LionDialog",
+          "declaration": {
+            "name": "LionDialog",
+            "module": "./src/LionDialog.d.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "./src/LionDialog.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "LionDialog",
+          "mixins": [
+            {
+              "name": "OverlayMixin",
+              "package": "@lion/overlays"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "@lion/core"
+          },
+          "members": [
+            {
+              "kind": "method",
+              "name": "_defineOverlayConfig",
+              "privacy": "protected"
+            },
+            {
+              "kind": "method",
+              "name": "_setupOpenCloseListeners",
+              "privacy": "protected"
+            },
+            {
+              "kind": "method",
+              "name": "_teardownOpenCloseListeners",
+              "privacy": "protected"
+            }
+          ],
+          "tagName": "lion-dialog"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "LionDialog",
+          "declaration": {
+            "name": "LionDialog",
+            "module": "./src/LionDialog.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "./test/lion-dialog.test.d.ts",
+      "declarations": [],
+      "exports": []
+    }
+  ]
+}
