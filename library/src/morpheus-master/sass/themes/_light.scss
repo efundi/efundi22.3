@@ -31,7 +31,7 @@
     // predefined with gray, blue, teal, gold, green, orange,
     // purple, and red palettes available for you to use.
     // More info about defineColorHSL in sass/themes/_base.scss
-    @include defineColorHSL(--sakai-brand, 203, 76%, 25%);
+    @include defineColorHSL(--sakai-brand, 274, 40%, 40%);
     /////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@
     --logo-height: 36px;
     --logo-width: 126px;
     --logo-opacity: 1;
-    --logo-background-color: var(--sakai-primary-color-1);
-
+    //--logo-background-color: var(--sakai-primary-color-1);
+    --logo-background-color: var(--sakai-brand);
     // Primary branding color. 
     // Suggested: Your institution's main branding color.
     // Used in the top header, action buttons, etc. Commonly used as the background
@@ -203,7 +203,7 @@
     --tool-tab-active-background-color: var(--sakai-background-color-1);
     --tool-tab-active-highlight-color:var(--sakai-active-color-3);
 
-    --top-header-background: var(--sakai-color-gray--darker-7);
+    --top-header-background: var(--sakai-primary-color-1);
     --top-header-profile-border-color-top: var(--sakai-secondary-color-1);
     --top-header-profile-border-color-right: var(--sakai-secondary-color-1);
     --top-header-profile-border-color-bottom: var(--sakai-tertiary-color-1);
