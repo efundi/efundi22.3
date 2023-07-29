@@ -121,6 +121,8 @@
                 <module>webjars</module>
                 <module>webservices</module>
                 <module>wicket</module>
+                <module>scorm</module>
+                <module>blogwow</module>
             </modules>
         </profile>
         <profile>
@@ -209,6 +211,8 @@
                 <module>webservices</module>
                 <module>wicket</module>
                 <module>yaft</module>
+                <module>scorm</module>
+                <module>blogwow</module>
             </modules>
         </profile>
 
