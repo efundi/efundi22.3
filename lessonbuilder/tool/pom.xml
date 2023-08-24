@@ -193,22 +193,21 @@
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j</artifactId>
             <version>6.0.1</version>   
+            <exclusions>
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+		        <exclusion>
+		            <groupId>xalan</groupId>
+		            <artifactId>xalan</artifactId>
+		        </exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-ImportXHTML</artifactId>
             <version>6.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>2.7.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>serializer</artifactId>
-            <version>2.7.1</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.htmlcleaner</groupId>
@@ -230,11 +229,23 @@
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-transcoder</artifactId>
             <version>1.8</version>
+            <exclusions>
+		        <exclusion>
+		            <groupId>xalan</groupId>
+		            <artifactId>xalan</artifactId>
+		        </exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-dom</artifactId>
             <version>1.8</version>
+            <exclusions>
+		        <exclusion>
+		            <groupId>xalan</groupId>
+		            <artifactId>xalan</artifactId>
+		        </exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
@@ -262,11 +273,23 @@
             <artifactId>fop</artifactId>
             <version>2.0</version>
             <type>jar</type>
+            <exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>xmlgraphics-commons</artifactId>
             <version>2.0</version>
+            <exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>

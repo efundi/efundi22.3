@@ -1,16 +1,12 @@
 package org.sakaiproject.lessonbuildertool.util;
 
-import coza.opencollab.epub.creator.model.EpubBook;
-
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
 
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.ContentNode;
 import org.htmlcleaner.HtmlCleaner;
@@ -23,6 +19,9 @@ import org.sakaiproject.content.api.ContentResource;
 import org.sakaiproject.exception.ServerOverloadException;
 import org.sakaiproject.lessonbuildertool.service.DataExportService;
 
+import coza.opencollab.epub.creator.model.EpubBook;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Utility class for using the HTMLCleaner API
  *
@@ -30,9 +29,9 @@ import org.sakaiproject.lessonbuildertool.service.DataExportService;
  *
  * @author OpenCollab
  */
+@Slf4j
 public class HtmlCleanerUtil {
-
-    private static final Logger LOG = Logger.getLogger(HtmlCleanerUtil.class);
+	
     /**
      * The HTML cleaner
      */
@@ -299,7 +298,7 @@ public class HtmlCleanerUtil {
                     tag.addAttribute("src", fileName);
                 }
             } catch (Exception ex) {
-                LOG.error("Could not save image as EPUB resource - this image will link to external URL : " + url, ex);
+                log.error("Could not save image as EPUB resource - this image will link to external URL : " + url, ex);
                 replaceTagWithNewHTML(tag, MessageFormat.format(styledError, url + ", no longer exists"));
             }
         }
@@ -370,7 +369,7 @@ public class HtmlCleanerUtil {
 	        	String newNode = MessageFormat.format(html5AudioTag, contentResourceId.replaceFirst("/", ""), type, srcValue);
 	            replaceTagWithNewHTML(tag.getParent(), newNode);
         	}catch(Exception e){
-        		LOG.error("Could not alter the HtmlAudio tag to HTML5 Audio URL : " + srcValue , e);
+        		log.error("Could not alter the HtmlAudio tag to HTML5 Audio URL : " + srcValue , e);
         	}
         }
         
@@ -393,7 +392,7 @@ public class HtmlCleanerUtil {
                 }
                 replaceTagWithNewHTML(tag, newNode);
             } catch (Exception ex) {
-                LOG.error("Could not save video as EPUB resource - this video will link to external URL : " + src, ex);
+                log.error("Could not save video as EPUB resource - this video will link to external URL : " + src, ex);
                 replaceTagWithNewHTML(tag, MessageFormat.format(externalVideoTag, src));
             }
         }
