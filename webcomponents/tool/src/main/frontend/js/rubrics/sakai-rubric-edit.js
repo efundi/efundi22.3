@@ -108,8 +108,9 @@ export class SakaiRubricEdit extends RubricsElement {
 
       const popover = $(`#edit_rubric_${this.rubric.id}`);
 
-      popover[0].style.top = `${target.offsetTop + 20  }px`;
-      popover[0].style.left = `${target.offsetLeft - 125  }px`;
+      //popover[0].style.top = `${target.offsetTop + 20  }px`;
+      //popover[0].style.left = `${target.offsetLeft - 125  }px`;
+      popover[0].style.position = 'static';
 
       popover.show();
       const input =  popover.find("input[type='text']")[0];
