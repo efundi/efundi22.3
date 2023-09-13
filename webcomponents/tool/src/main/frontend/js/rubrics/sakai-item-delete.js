@@ -93,10 +93,11 @@ export class SakaiItemDelete extends RubricsElement {
 
       const popover = $(`#delete_${this.type}_${this.item.id}`);
 
-      const target = this.querySelector(".fa-times");
+      //const target = this.querySelector(".fa-times");
 
-      popover[0].style.left = `${target.offsetLeft - 280  }px`;
-      popover[0].style.top = `${target.offsetTop - this.offsetHeight * 2 - 10  }px`;
+      //popover[0].style.left = `${target.offsetLeft - 280  }px`;
+      //popover[0].style.top = `${target.offsetTop - this.offsetHeight * 2 - 10  }px`;
+      popover[0].style.position = "static";
 
       $('.btn-danger').focus();
 
