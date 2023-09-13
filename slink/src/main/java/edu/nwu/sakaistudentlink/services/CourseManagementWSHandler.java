@@ -1,6 +1,7 @@
 package edu.nwu.sakaistudentlink.services;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,11 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ac.za.nwu.academic.dates.dto.AcademicPeriodInfo;
-import ac.za.nwu.academic.registration.service.StudentAcademicRegistrationService;
-import ac.za.nwu.moduleoffering.dto.ModuleOfferingSearchCriteriaInfo;
-import ac.za.nwu.registry.utility.GenericServiceClientFactory;
-import assemble.edu.common.dto.ContextInfo;
+import jakarta.xml.ws.BindingProvider;
+import za.ac.nwu.wsdl.studentacademicregistration.AcademicPeriodInfo;
+import za.ac.nwu.wsdl.studentacademicregistration.ContextInfo;
+import za.ac.nwu.wsdl.studentacademicregistration.ModuleOfferingSearchCriteriaInfo;
+import za.ac.nwu.wsdl.studentacademicregistration.StudentAcademicRegistrationService;
+import za.ac.nwu.wsdl.studentacademicregistration.StudentAcademicRegistrationService_Service;
 
 
 /**
@@ -149,7 +151,9 @@ public class CourseManagementWSHandler {
 		AcademicPeriodInfo academicPeriodInfo = new AcademicPeriodInfo();
 		academicPeriodInfo.setAcadPeriodtTypeKey("vss.code.AcademicPeriod.YEAR");
 		academicPeriodInfo.setAcadPeriodValue(Integer.toString(calendar.get(Calendar.YEAR)));
-		ContextInfo contextInfo = new ContextInfo("SOAPUI");
+		
+		ContextInfo contextInfo = new ContextInfo();
+		contextInfo.setSubscriberClientName("SOAPUI");
         
         searchCriteria.setAcademicPeriod(academicPeriodInfo);
         searchCriteria.setModuleSubjectCode(moduleDetail.getModuleSubjectCode().toUpperCase());
@@ -159,13 +163,17 @@ public class CourseManagementWSHandler {
         searchCriteria.setModeOfDeliveryTypeKey(moduleDetail.getModeOfDeliveryCodeParam());
 
 		try {
-			String envTypeKey = settingsProperties.getProperty("ws.student.env.type.key", "/PROD/SAPI-STUDENTACADEMICREGISTRATIONSERVICE/V8");
-			String contextInfoUsername = settingsProperties.getProperty("nwu.context.info.username", "sapiappreadprod");
-			String contextInfoPassword = settingsProperties.getProperty("nwu.context.info.password", "5p@ssw0rd4pr0dr");
-			
-			StudentAcademicRegistrationService service = (StudentAcademicRegistrationService) GenericServiceClientFactory
-					.getService(envTypeKey, contextInfoUsername, contextInfoPassword, StudentAcademicRegistrationService.class);
-			List<String> studentUserNames = service.getStudentAcademicRegistrationByModuleOffering(searchCriteria, contextInfo);			
+			URL wsdlURL = new URL(settingsProperties
+	                .getProperty("ws.student.url", "http://workflow7prd.nwu.ac.za:80/sapi-vss-v8/StudentAcademicRegistrationService/StudentAcademicRegistrationService?wsdl"));
+	        StudentAcademicRegistrationService_Service service = new StudentAcademicRegistrationService_Service(wsdlURL);
+	        StudentAcademicRegistrationService port = service.getStudentAcademicRegistrationServicePort();        
+
+			((BindingProvider) port).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, settingsProperties
+	                .getProperty("nwu.context.info.username", "sapiappreadprod"));
+			((BindingProvider) port).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, settingsProperties
+	                .getProperty("nwu.context.info.password", "5p@ssw0rd4pr0dr"));
+
+			List<String> studentUserNames = port.getStudentAcademicRegistrationByModuleOffering(searchCriteria, contextInfo);
 	        
 	        for (int j = 0; j < studentUserNames.size(); j++) {
 	        	String studentUserName = studentUserNames.get(j);

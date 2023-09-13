@@ -1,0 +1,654 @@
+<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://nwu.ac.za/wsdl/StudentAcademicRegistration" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" name="StudentAcademicRegistrationService" targetNamespace="http://nwu.ac.za/wsdl/StudentAcademicRegistration">
+  <wsdl:types>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://nwu.ac.za/wsdl/StudentAcademicRegistration" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://nwu.ac.za/wsdl/StudentAcademicRegistration">
+  <xs:element name="getActiveStudentAcademicRegistrationByModuleOffering" type="tns:getActiveStudentAcademicRegistrationByModuleOffering"/>
+  <xs:element name="getActiveStudentAcademicRegistrationByModuleOfferingResponse" type="tns:getActiveStudentAcademicRegistrationByModuleOfferingResponse"/>
+  <xs:element name="getStudentAcademicRegistration" type="tns:getStudentAcademicRegistration"/>
+  <xs:element name="getStudentAcademicRegistrationByLang" type="tns:getStudentAcademicRegistrationByLang"/>
+  <xs:element name="getStudentAcademicRegistrationByLangResponse" type="tns:getStudentAcademicRegistrationByLangResponse"/>
+  <xs:element name="getStudentAcademicRegistrationByModuleOffering" type="tns:getStudentAcademicRegistrationByModuleOffering"/>
+  <xs:element name="getStudentAcademicRegistrationByModuleOfferingResponse" type="tns:getStudentAcademicRegistrationByModuleOfferingResponse"/>
+  <xs:element name="getStudentAcademicRegistrationResponse" type="tns:getStudentAcademicRegistrationResponse"/>
+  <xs:element name="resetService" type="tns:resetService"/>
+  <xs:element name="resetServiceResponse" type="tns:resetServiceResponse"/>
+  <xs:element name="validateStudentModulePrerequisite" type="tns:validateStudentModulePrerequisite"/>
+  <xs:element name="validateStudentModulePrerequisiteResponse" type="tns:validateStudentModulePrerequisiteResponse"/>
+  <xs:element name="validateStudentModulesPrerequisite" type="tns:validateStudentModulesPrerequisite"/>
+  <xs:element name="validateStudentModulesPrerequisiteResponse" type="tns:validateStudentModulesPrerequisiteResponse"/>
+  <xs:complexType name="getActiveStudentAcademicRegistrationByModuleOffering">
+    <xs:sequence>
+      <xs:element name="moduleOfferingSearchCriteriaInfo" type="tns:ModuleOfferingSearchCriteriaInfo"/>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModuleOfferingSearchCriteriaInfo">
+    <xs:sequence>
+      <xs:element name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleOrgEnt" type="xs:string"/>
+      <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="courseGroupTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="moduleDescription" type="xs:string"/>
+      <xs:element minOccurs="0" name="languageTypeKey" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AcademicPeriodInfo">
+    <xs:sequence>
+      <xs:element name="acadPeriodtTypeKey" type="xs:string"/>
+      <xs:element name="acadPeriodValue" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ContextInfo">
+    <xs:sequence>
+      <xs:element name="subscriberClientName" type="xs:string"/>
+      <xs:element minOccurs="0" name="subscriberToken" type="xs:string"/>
+      <xs:element name="principalId" type="xs:string"/>
+      <xs:element name="currentDate" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getActiveStudentAcademicRegistrationByModuleOfferingResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getStudentAcademicRegistrationByLang">
+    <xs:sequence>
+      <xs:element name="univNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="academicPeriodInfo" type="tns:AcademicPeriodInfo"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getStudentAcademicRegistrationByLangResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:studentAcademicRegistrationInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="studentAcademicRegistrationInfo">
+    <xs:complexContent>
+      <xs:extension base="tns:studentAcademicQualificationInfo">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="enrolledModules" nillable="true" type="tns:studentModuleAcademicInfo"/>
+          <xs:element name="registrationStatusTypeKey" type="xs:string"/>
+          <xs:element name="numberOfModulesEnrolled" type="xs:int"/>
+          <xs:element name="numberOfRepeatModulesEnrolled" type="xs:int"/>
+          <xs:element name="numberOfModulesDiscontinued" type="xs:int"/>
+          <xs:element name="numberOfModulesExcempted" type="xs:int"/>
+          <xs:element name="numberOfModulesRecognition" type="xs:int"/>
+          <xs:element minOccurs="0" name="entryLevel" type="xs:string"/>
+          <xs:element minOccurs="0" name="studyType" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="studentAcademicQualificationInfo">
+    <xs:sequence>
+      <xs:element name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element name="academicYears" type="xs:int"/>
+      <xs:element name="conditionalRegistration" type="xs:boolean"/>
+      <xs:element name="historicYears" type="xs:int"/>
+      <xs:element name="legacyKeys">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="entry">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="key" type="xs:string"/>
+                  <xs:element minOccurs="0" name="value" type="xs:int"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="mainQualification" type="xs:boolean"/>
+      <xs:element name="program" type="xs:string"/>
+      <xs:element name="programDesc" type="xs:string"/>
+      <xs:element minOccurs="0" name="programMethodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="programOrgUnitNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="programPresentationCategoryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="programSite" type="xs:string"/>
+      <xs:element name="qualification" type="xs:string"/>
+      <xs:element name="qualificationDesc" type="xs:string"/>
+      <xs:element name="qualificationDiscontinue" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="qualificationDiscontinueDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="qualificationDiscontinueReasonTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="qualificationEndDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="qualificationFaculty" type="xs:string"/>
+      <xs:element minOccurs="0" name="qualificationMethodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="qualificationPresentationCategoryTypeKey" type="xs:string"/>
+      <xs:element name="qualificationRegistrationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="qualificationResultTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="qualificationSite" type="xs:string"/>
+      <xs:element name="qualificationStartDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="qualificationTypeTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="studyTypeTypeKey" type="xs:string"/>
+      <xs:element name="univNumber" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="studentModuleAcademicInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element name="conditionalRegistration" type="xs:boolean"/>
+      <xs:element name="exemption" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="exemptionTypeKey" type="xs:string"/>
+      <xs:element name="legacyKeys">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="entry">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="key" type="xs:string"/>
+                  <xs:element minOccurs="0" name="value" type="xs:int"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="module" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleCreditTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleDescription" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleDiscontinueDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="moduleMethodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modulePeriodTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modulePresentationCategoryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleRegistrationDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="moduleResultTypeKey" type="xs:string"/>
+      <xs:element name="moduleSite" type="xs:int"/>
+      <xs:element minOccurs="0" name="moduleTypeTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modulepresentationLanguageTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="program" type="xs:string"/>
+      <xs:element minOccurs="0" name="qualification" type="xs:string"/>
+      <xs:element name="repeatingModule" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="univNumber" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="validateStudentModulesPrerequisite">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="studentModuleAcadInfos" type="tns:studentModuleAcademicInfo"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="validateStudentModulesPrerequisiteResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:studentModulePrerequisteResultInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="studentModulePrerequisteResultInfo">
+    <xs:sequence>
+      <xs:element name="prereqPassed" type="xs:boolean"/>
+      <xs:element minOccurs="0" name="prereqResultMessage" type="xs:string"/>
+      <xs:element minOccurs="0" name="studentModuleAcademic" type="tns:studentModuleAcademicInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="resetService">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="resetServiceResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getStudentAcademicRegistrationByModuleOffering">
+    <xs:sequence>
+      <xs:element name="moduleOfferingSearchCriteriaInfo" type="tns:ModuleOfferingSearchCriteriaInfo"/>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getStudentAcademicRegistrationByModuleOfferingResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="validateStudentModulePrerequisite">
+    <xs:sequence>
+      <xs:element name="studentModuleAcadInfo" type="tns:studentModuleAcademicInfo"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="validateStudentModulePrerequisiteResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:studentModulePrerequisteResultInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getStudentAcademicRegistration">
+    <xs:sequence>
+      <xs:element name="univNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="academicPeriodInfo" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getStudentAcademicRegistrationResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:studentAcademicRegistrationInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DoesNotExistException" type="tns:DoesNotExistException"/>
+  <xs:complexType name="DoesNotExistException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PermissionDeniedException" type="tns:PermissionDeniedException"/>
+  <xs:complexType name="PermissionDeniedException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="OperationFailedException" type="tns:OperationFailedException"/>
+  <xs:complexType name="OperationFailedException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InvalidParameterException" type="tns:InvalidParameterException"/>
+  <xs:complexType name="InvalidParameterException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MissingParameterException" type="tns:MissingParameterException"/>
+  <xs:complexType name="MissingParameterException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="PermissionDeniedException">
+    <wsdl:part element="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStudentAcademicRegistrationByLang">
+    <wsdl:part element="tns:getStudentAcademicRegistrationByLang" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="validateStudentModulesPrerequisite">
+    <wsdl:part element="tns:validateStudentModulesPrerequisite" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="MissingParameterException">
+    <wsdl:part element="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="resetService">
+    <wsdl:part element="tns:resetService" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStudentAcademicRegistrationResponse">
+    <wsdl:part element="tns:getStudentAcademicRegistrationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStudentAcademicRegistrationByModuleOfferingResponse">
+    <wsdl:part element="tns:getStudentAcademicRegistrationByModuleOfferingResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStudentAcademicRegistrationByModuleOffering">
+    <wsdl:part element="tns:getStudentAcademicRegistrationByModuleOffering" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="validateStudentModulePrerequisite">
+    <wsdl:part element="tns:validateStudentModulePrerequisite" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="resetServiceResponse">
+    <wsdl:part element="tns:resetServiceResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="InvalidParameterException">
+    <wsdl:part element="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="validateStudentModulesPrerequisiteResponse">
+    <wsdl:part element="tns:validateStudentModulesPrerequisiteResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getActiveStudentAcademicRegistrationByModuleOfferingResponse">
+    <wsdl:part element="tns:getActiveStudentAcademicRegistrationByModuleOfferingResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getActiveStudentAcademicRegistrationByModuleOffering">
+    <wsdl:part element="tns:getActiveStudentAcademicRegistrationByModuleOffering" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="OperationFailedException">
+    <wsdl:part element="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStudentAcademicRegistrationByLangResponse">
+    <wsdl:part element="tns:getStudentAcademicRegistrationByLangResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="validateStudentModulePrerequisiteResponse">
+    <wsdl:part element="tns:validateStudentModulePrerequisiteResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="DoesNotExistException">
+    <wsdl:part element="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStudentAcademicRegistration">
+    <wsdl:part element="tns:getStudentAcademicRegistration" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="StudentAcademicRegistrationService">
+    <wsdl:operation name="getActiveStudentAcademicRegistrationByModuleOffering">
+      <wsdl:input message="tns:getActiveStudentAcademicRegistrationByModuleOffering" name="getActiveStudentAcademicRegistrationByModuleOffering">
+    </wsdl:input>
+      <wsdl:output message="tns:getActiveStudentAcademicRegistrationByModuleOfferingResponse" name="getActiveStudentAcademicRegistrationByModuleOfferingResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getStudentAcademicRegistrationByLang">
+      <wsdl:input message="tns:getStudentAcademicRegistrationByLang" name="getStudentAcademicRegistrationByLang">
+    </wsdl:input>
+      <wsdl:output message="tns:getStudentAcademicRegistrationByLangResponse" name="getStudentAcademicRegistrationByLangResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="validateStudentModulesPrerequisite">
+      <wsdl:input message="tns:validateStudentModulesPrerequisite" name="validateStudentModulesPrerequisite">
+    </wsdl:input>
+      <wsdl:output message="tns:validateStudentModulesPrerequisiteResponse" name="validateStudentModulesPrerequisiteResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="resetService">
+      <wsdl:input message="tns:resetService" name="resetService">
+    </wsdl:input>
+      <wsdl:output message="tns:resetServiceResponse" name="resetServiceResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getStudentAcademicRegistrationByModuleOffering">
+      <wsdl:input message="tns:getStudentAcademicRegistrationByModuleOffering" name="getStudentAcademicRegistrationByModuleOffering">
+    </wsdl:input>
+      <wsdl:output message="tns:getStudentAcademicRegistrationByModuleOfferingResponse" name="getStudentAcademicRegistrationByModuleOfferingResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="validateStudentModulePrerequisite">
+      <wsdl:input message="tns:validateStudentModulePrerequisite" name="validateStudentModulePrerequisite">
+    </wsdl:input>
+      <wsdl:output message="tns:validateStudentModulePrerequisiteResponse" name="validateStudentModulePrerequisiteResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getStudentAcademicRegistration">
+      <wsdl:input message="tns:getStudentAcademicRegistration" name="getStudentAcademicRegistration">
+    </wsdl:input>
+      <wsdl:output message="tns:getStudentAcademicRegistrationResponse" name="getStudentAcademicRegistrationResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="StudentAcademicRegistrationServiceSoapBinding" type="tns:StudentAcademicRegistrationService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getActiveStudentAcademicRegistrationByModuleOffering">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getActiveStudentAcademicRegistrationByModuleOffering">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getActiveStudentAcademicRegistrationByModuleOfferingResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getStudentAcademicRegistrationByLang">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getStudentAcademicRegistrationByLang">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getStudentAcademicRegistrationByLangResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="validateStudentModulesPrerequisite">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="validateStudentModulesPrerequisite">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="validateStudentModulesPrerequisiteResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="resetService">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="resetService">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="resetServiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getStudentAcademicRegistrationByModuleOffering">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getStudentAcademicRegistrationByModuleOffering">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getStudentAcademicRegistrationByModuleOfferingResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="validateStudentModulePrerequisite">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="validateStudentModulePrerequisite">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="validateStudentModulePrerequisiteResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getStudentAcademicRegistration">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getStudentAcademicRegistration">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getStudentAcademicRegistrationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="StudentAcademicRegistrationService">
+    <wsdl:port binding="tns:StudentAcademicRegistrationServiceSoapBinding" name="StudentAcademicRegistrationServicePort">
+      <soap:address location="http://workflow7prd.nwu.ac.za:80/sapi-vss-v8/StudentAcademicRegistrationService/StudentAcademicRegistrationService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
