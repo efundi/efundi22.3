@@ -123,6 +123,7 @@
                 <module>wicket</module>
                 <module>scorm</module>
                 <module>blogwow</module>
+                <module>cmprovider</module>
             </modules>
         </profile>
         <profile>
@@ -213,6 +214,7 @@
                 <module>yaft</module>
                 <module>scorm</module>
                 <module>blogwow</module>
+                <module>cmprovider</module>
             </modules>
         </profile>
 
