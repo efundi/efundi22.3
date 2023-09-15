@@ -1,0 +1,656 @@
+<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://nwu.ac.za/wsdl/CourseOffering" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" name="CourseOfferingService" targetNamespace="http://nwu.ac.za/wsdl/CourseOffering">
+  <wsdl:types>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://nwu.ac.za/wsdl/CourseOffering" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://nwu.ac.za/wsdl/CourseOffering">
+  <xs:element name="getModuleOfferingBySearchCriteria" type="tns:getModuleOfferingBySearchCriteria"/>
+  <xs:element name="getModuleOfferingBySearchCriteriaResponse" type="tns:getModuleOfferingBySearchCriteriaResponse"/>
+  <xs:element name="getModuleOfferingFee" type="tns:getModuleOfferingFee"/>
+  <xs:element name="getModuleOfferingFeeResponse" type="tns:getModuleOfferingFeeResponse"/>
+  <xs:element name="getModuleOfferingPresentationLocation" type="tns:getModuleOfferingPresentationLocation"/>
+  <xs:element name="getModuleOfferingPresentationLocationResponse" type="tns:getModuleOfferingPresentationLocationResponse"/>
+  <xs:element name="getModuleOfferingStudyMaterialBySearchCriteria" type="tns:getModuleOfferingStudyMaterialBySearchCriteria"/>
+  <xs:element name="getModuleOfferingStudyMaterialBySearchCriteriaResponse" type="tns:getModuleOfferingStudyMaterialBySearchCriteriaResponse"/>
+  <xs:element name="getModulePresentationLocationByType" type="tns:getModulePresentationLocationByType"/>
+  <xs:element name="getModulePresentationLocationByTypeResponse" type="tns:getModulePresentationLocationByTypeResponse"/>
+  <xs:element name="resetService" type="tns:resetService"/>
+  <xs:element name="resetServiceResponse" type="tns:resetServiceResponse"/>
+  <xs:complexType name="resetService">
+    <xs:sequence>
+      <xs:element name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ContextInfo">
+    <xs:sequence>
+      <xs:element name="subscriberClientName" type="xs:string"/>
+      <xs:element minOccurs="0" name="subscriberToken" type="xs:string"/>
+      <xs:element name="principalId" type="xs:string"/>
+      <xs:element name="currentDate" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="resetServiceResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingBySearchCriteria">
+    <xs:sequence>
+      <xs:element name="moduleOfferingSearchCriteriaInfo" type="tns:ModuleOfferingSearchCriteriaInfo"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModuleOfferingSearchCriteriaInfo">
+    <xs:sequence>
+      <xs:element name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleOrgEnt" type="xs:string"/>
+      <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="courseGroupTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="moduleDescription" type="xs:string"/>
+      <xs:element minOccurs="0" name="languageTypeKey" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AcademicPeriodInfo">
+    <xs:sequence>
+      <xs:element name="acadPeriodtTypeKey" type="xs:string"/>
+      <xs:element name="acadPeriodValue" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingBySearchCriteriaResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:ModuleOfferingInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModuleOfferingInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleOrgEnt" type="xs:string"/>
+      <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="courseGroupTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="languageTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleDescription" type="xs:string"/>
+      <xs:element minOccurs="0" name="termTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="creditTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="startMonth" type="xs:string"/>
+      <xs:element minOccurs="0" name="metaInfo" type="tns:MetaInfo"/>
+      <xs:element name="legacyKeys">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="entry">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="key" type="xs:string"/>
+                  <xs:element minOccurs="0" name="value" type="xs:int"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MetaInfo">
+    <xs:sequence>
+      <xs:element name="versionInd" type="xs:int"/>
+      <xs:element minOccurs="0" name="createTime" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="createId" type="xs:string"/>
+      <xs:element minOccurs="0" name="updateTime" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="updateId" type="xs:string"/>
+      <xs:element name="auditFunction" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModulePresentationLocationByType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element name="moduleSubjectCode" type="xs:string"/>
+      <xs:element name="moduleNumber" type="xs:string"/>
+      <xs:element name="presentationLocationTypeKey" type="xs:string"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModulePresentationLocationByTypeResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:ModulePresentationLocationInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModulePresentationLocationInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="metaInfo" type="tns:MetaInfo"/>
+      <xs:element minOccurs="0" name="presentationLocationUnivNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="description" type="xs:string"/>
+      <xs:element minOccurs="0" name="presentationLocationTypeKey" type="xs:string"/>
+      <xs:element name="legacyKeys">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="entry">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="key" type="xs:string"/>
+                  <xs:element minOccurs="0" name="value" type="xs:string"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingPresentationLocation">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element name="moduleSubjectCode" type="xs:string"/>
+      <xs:element name="moduleNumber" type="xs:string"/>
+      <xs:element name="presentationLocationTypeKey" type="xs:string"/>
+      <xs:element name="moduleSite" type="xs:string"/>
+      <xs:element name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingPresentationLocationResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:ModuleOfferingPresentationLocationInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModuleOfferingPresentationLocationInfo">
+    <xs:complexContent>
+      <xs:extension base="tns:ModulePresentationLocationInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+          <xs:element minOccurs="0" name="moduleOrgEnt" type="xs:string"/>
+          <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+          <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingFee">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element name="moduleSubjectCode" type="xs:string"/>
+      <xs:element name="moduleNumber" type="xs:string"/>
+      <xs:element name="moduleSite" type="xs:string"/>
+      <xs:element name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingFeeResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:ModuleOfferingFeeInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModuleOfferingFeeInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+      <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="metaInfo" type="tns:MetaInfo"/>
+      <xs:element minOccurs="0" name="moduleClassGroupFee" type="xs:double"/>
+      <xs:element name="legacyKeys">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="entry">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="key" type="xs:string"/>
+                  <xs:element minOccurs="0" name="value" type="xs:int"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingStudyMaterialBySearchCriteria">
+    <xs:sequence>
+      <xs:element name="moduleOfferingStudyMaterialSearchCriteriaInfo" type="tns:ModuleOfferingStudyMaterialSearchCriteriaInfo"/>
+      <xs:element name="systemLanguageTypeKey" type="xs:string"/>
+      <xs:element name="contextInfo" type="tns:ContextInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ModuleOfferingStudyMaterialSearchCriteriaInfo">
+    <xs:sequence>
+      <xs:element name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleOrgEnt" type="xs:string"/>
+      <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getModuleOfferingStudyMaterialBySearchCriteriaResponse">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:StudentModuleOfferingStudyMaterialInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="StudentModuleOfferingStudyMaterialInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="academicPeriod" type="tns:AcademicPeriodInfo"/>
+      <xs:element minOccurs="0" name="moduleSubjectCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleNumber" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleSite" type="xs:string"/>
+      <xs:element minOccurs="0" name="moduleOrgEnt" type="xs:string"/>
+      <xs:element minOccurs="0" name="methodOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="modeOfDeliveryTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="startDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="endDate" type="xs:string"/>
+      <xs:element minOccurs="0" name="metaInfo" type="tns:MetaInfo"/>
+      <xs:element minOccurs="0" name="itemCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="studyMaterialLanguageTypeKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="studyMaterialDescription" type="xs:string"/>
+      <xs:element name="studyMaterialIsOptional" type="xs:boolean"/>
+      <xs:element name="studyMaterialEnabled" type="xs:boolean"/>
+      <xs:element name="legacyKeys">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="entry">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="key" type="xs:string"/>
+                  <xs:element minOccurs="0" name="value" type="xs:int"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="OperationFailedException" type="tns:OperationFailedException"/>
+  <xs:complexType name="OperationFailedException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InvalidParameterException" type="tns:InvalidParameterException"/>
+  <xs:complexType name="InvalidParameterException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MissingParameterException" type="tns:MissingParameterException"/>
+  <xs:complexType name="MissingParameterException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DoesNotExistException" type="tns:DoesNotExistException"/>
+  <xs:complexType name="DoesNotExistException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PermissionDeniedException" type="tns:PermissionDeniedException"/>
+  <xs:complexType name="PermissionDeniedException">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="functionalMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgValue" type="xs:string"/>
+      <xs:element minOccurs="0" name="functionalMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="techMsgKey" type="xs:string"/>
+      <xs:element minOccurs="0" name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="getModuleOfferingBySearchCriteria">
+    <wsdl:part element="tns:getModuleOfferingBySearchCriteria" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModulePresentationLocationByType">
+    <wsdl:part element="tns:getModulePresentationLocationByType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="OperationFailedException">
+    <wsdl:part element="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingPresentationLocation">
+    <wsdl:part element="tns:getModuleOfferingPresentationLocation" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingFeeResponse">
+    <wsdl:part element="tns:getModuleOfferingFeeResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingBySearchCriteriaResponse">
+    <wsdl:part element="tns:getModuleOfferingBySearchCriteriaResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingFee">
+    <wsdl:part element="tns:getModuleOfferingFee" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingStudyMaterialBySearchCriteria">
+    <wsdl:part element="tns:getModuleOfferingStudyMaterialBySearchCriteria" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="DoesNotExistException">
+    <wsdl:part element="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="resetService">
+    <wsdl:part element="tns:resetService" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="MissingParameterException">
+    <wsdl:part element="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="PermissionDeniedException">
+    <wsdl:part element="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingStudyMaterialBySearchCriteriaResponse">
+    <wsdl:part element="tns:getModuleOfferingStudyMaterialBySearchCriteriaResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModulePresentationLocationByTypeResponse">
+    <wsdl:part element="tns:getModulePresentationLocationByTypeResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getModuleOfferingPresentationLocationResponse">
+    <wsdl:part element="tns:getModuleOfferingPresentationLocationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="InvalidParameterException">
+    <wsdl:part element="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="resetServiceResponse">
+    <wsdl:part element="tns:resetServiceResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="CourseOfferingService">
+    <wsdl:operation name="resetService">
+      <wsdl:input message="tns:resetService" name="resetService">
+    </wsdl:input>
+      <wsdl:output message="tns:resetServiceResponse" name="resetServiceResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingBySearchCriteria">
+      <wsdl:input message="tns:getModuleOfferingBySearchCriteria" name="getModuleOfferingBySearchCriteria">
+    </wsdl:input>
+      <wsdl:output message="tns:getModuleOfferingBySearchCriteriaResponse" name="getModuleOfferingBySearchCriteriaResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModulePresentationLocationByType">
+      <wsdl:input message="tns:getModulePresentationLocationByType" name="getModulePresentationLocationByType">
+    </wsdl:input>
+      <wsdl:output message="tns:getModulePresentationLocationByTypeResponse" name="getModulePresentationLocationByTypeResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingPresentationLocation">
+      <wsdl:input message="tns:getModuleOfferingPresentationLocation" name="getModuleOfferingPresentationLocation">
+    </wsdl:input>
+      <wsdl:output message="tns:getModuleOfferingPresentationLocationResponse" name="getModuleOfferingPresentationLocationResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingFee">
+      <wsdl:input message="tns:getModuleOfferingFee" name="getModuleOfferingFee">
+    </wsdl:input>
+      <wsdl:output message="tns:getModuleOfferingFeeResponse" name="getModuleOfferingFeeResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingStudyMaterialBySearchCriteria">
+      <wsdl:input message="tns:getModuleOfferingStudyMaterialBySearchCriteria" name="getModuleOfferingStudyMaterialBySearchCriteria">
+    </wsdl:input>
+      <wsdl:output message="tns:getModuleOfferingStudyMaterialBySearchCriteriaResponse" name="getModuleOfferingStudyMaterialBySearchCriteriaResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:InvalidParameterException" name="InvalidParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:DoesNotExistException" name="DoesNotExistException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:OperationFailedException" name="OperationFailedException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:MissingParameterException" name="MissingParameterException">
+    </wsdl:fault>
+      <wsdl:fault message="tns:PermissionDeniedException" name="PermissionDeniedException">
+    </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="CourseOfferingServiceSoapBinding" type="tns:CourseOfferingService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="resetService">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="resetService">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="resetServiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModulePresentationLocationByType">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getModulePresentationLocationByType">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getModulePresentationLocationByTypeResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingBySearchCriteria">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getModuleOfferingBySearchCriteria">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getModuleOfferingBySearchCriteriaResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingPresentationLocation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getModuleOfferingPresentationLocation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getModuleOfferingPresentationLocationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingFee">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getModuleOfferingFee">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getModuleOfferingFeeResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getModuleOfferingStudyMaterialBySearchCriteria">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getModuleOfferingStudyMaterialBySearchCriteria">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getModuleOfferingStudyMaterialBySearchCriteriaResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidParameterException">
+        <soap:fault name="InvalidParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DoesNotExistException">
+        <soap:fault name="DoesNotExistException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="OperationFailedException">
+        <soap:fault name="OperationFailedException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="MissingParameterException">
+        <soap:fault name="MissingParameterException" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="CourseOfferingService">
+    <wsdl:port binding="tns:CourseOfferingServiceSoapBinding" name="CourseOfferingServicePort">
+      <soap:address location="http://workflow7prd.nwu.ac.za:80/curriculum-delivery-v3/CourseOfferingService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
