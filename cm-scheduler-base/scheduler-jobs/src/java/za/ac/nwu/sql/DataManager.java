@@ -1,6 +1,7 @@
 package za.ac.nwu.sql;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,21 +18,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.api.ServerConfigurationService;
 
-import ac.za.nwu.academic.dates.dto.AcademicPeriodInfo;
-import ac.za.nwu.academic.registration.service.StudentAcademicRegistrationService;
-import ac.za.nwu.moduleoffering.dto.ModuleOfferingSearchCriteriaInfo;
-import ac.za.nwu.registry.utility.GenericServiceClientFactory;
-import assemble.edu.common.dto.ContextInfo;
-import assemble.edu.exceptions.DoesNotExistException;
-import assemble.edu.exceptions.InvalidParameterException;
-import assemble.edu.exceptions.MissingParameterException;
-import assemble.edu.exceptions.OperationFailedException;
-import assemble.edu.exceptions.PermissionDeniedException;
+import jakarta.xml.ws.BindingProvider;
 import za.ac.nwu.model.Campus;
 import za.ac.nwu.model.Lecturer;
 import za.ac.nwu.model.Module;
 import za.ac.nwu.model.Status;
 import za.ac.nwu.model.Student;
+import za.ac.nwu.wsdl.studentacademicregistration.AcademicPeriodInfo;
+import za.ac.nwu.wsdl.studentacademicregistration.ContextInfo;
+import za.ac.nwu.wsdl.studentacademicregistration.DoesNotExistException_Exception;
+import za.ac.nwu.wsdl.studentacademicregistration.InvalidParameterException_Exception;
+import za.ac.nwu.wsdl.studentacademicregistration.MissingParameterException_Exception;
+import za.ac.nwu.wsdl.studentacademicregistration.ModuleOfferingSearchCriteriaInfo;
+import za.ac.nwu.wsdl.studentacademicregistration.OperationFailedException_Exception;
+import za.ac.nwu.wsdl.studentacademicregistration.PermissionDeniedException_Exception;
+import za.ac.nwu.wsdl.studentacademicregistration.StudentAcademicRegistrationService;
+import za.ac.nwu.wsdl.studentacademicregistration.StudentAcademicRegistrationService_Service;
 
 public class DataManager {
 
@@ -576,23 +578,28 @@ public class DataManager {
 		return students;
 	}
 
-	private List<String> getRegisteredStudentsForModule(ModuleOfferingSearchCriteriaInfo searchCriteria) throws MalformedURLException, DoesNotExistException,
-			InvalidParameterException, MissingParameterException, OperationFailedException, PermissionDeniedException {
+	private List<String> getRegisteredStudentsForModule(ModuleOfferingSearchCriteriaInfo searchCriteria) throws MalformedURLException, DoesNotExistException_Exception, InvalidParameterException_Exception, MissingParameterException_Exception, OperationFailedException_Exception, PermissionDeniedException_Exception  {
 		ServerConfigurationService serverConfigurationService = connectionManager.getServerConfigurationService();
 
-		Calendar calendar = Calendar.getInstance();		
-		String envTypeKey = serverConfigurationService.getString("ws.env.type.key", "/PROD/SAPI-STUDENTACADEMICREGISTRATIONSERVICE/V8");
-		String contextInfoUsername = serverConfigurationService.getString("nwu.context.info.username", "sapiappreadprod");
-		String contextInfoPassword = serverConfigurationService.getString("nwu.context.info.password", "5p@ssw0rd4pr0dr");
+		Calendar calendar = Calendar.getInstance();
 
 		AcademicPeriodInfo academicPeriodInfo = new AcademicPeriodInfo();
 		academicPeriodInfo.setAcadPeriodtTypeKey("vss.code.AcademicPeriod.YEAR");
 		academicPeriodInfo.setAcadPeriodValue(Integer.toString(calendar.get(Calendar.YEAR)));
-		ContextInfo contextInfo = new ContextInfo("SOAPUI");
+		ContextInfo contextInfo = new ContextInfo();
+		contextInfo.setSubscriberClientName("SOAPUI");		
 		
-		StudentAcademicRegistrationService service = (StudentAcademicRegistrationService) GenericServiceClientFactory
-				.getService(envTypeKey, contextInfoUsername, contextInfoPassword, StudentAcademicRegistrationService.class);
-		List<String> studentUserNames = service.getStudentAcademicRegistrationByModuleOffering(searchCriteria, contextInfo);
+		URL wsdlURL = new URL(serverConfigurationService
+                .getString("ws.student.url", "http://workflow7prd.nwu.ac.za:80/sapi-vss-v8/StudentAcademicRegistrationService/StudentAcademicRegistrationService?wsdl"));
+        StudentAcademicRegistrationService_Service service = new StudentAcademicRegistrationService_Service(wsdlURL);
+        StudentAcademicRegistrationService port = service.getStudentAcademicRegistrationServicePort();        
+
+		((BindingProvider) port).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, serverConfigurationService
+                .getString("nwu.context.info.username", "sapiappreadprod"));
+		((BindingProvider) port).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, serverConfigurationService
+                .getString("nwu.context.info.password", "5p@ssw0rd4pr0dr"));
+
+		List<String> studentUserNames = port.getStudentAcademicRegistrationByModuleOffering(searchCriteria, contextInfo);
 		return studentUserNames;
 	}
 }

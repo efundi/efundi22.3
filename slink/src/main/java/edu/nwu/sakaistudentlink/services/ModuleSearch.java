@@ -1,5 +1,7 @@
 package edu.nwu.sakaistudentlink.services;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,17 +16,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ac.za.nwu.academic.dates.dto.AcademicPeriodInfo;
-import ac.za.nwu.courseoffering.service.CourseOfferingService;
-import ac.za.nwu.courseoffering.service.factory.CourseOfferingServiceClientFactory;
-import ac.za.nwu.moduleoffering.dto.ModuleOfferingInfo;
-import ac.za.nwu.moduleoffering.dto.ModuleOfferingSearchCriteriaInfo;
-import assemble.edu.common.dto.ContextInfo;
-import assemble.edu.exceptions.DoesNotExistException;
-import assemble.edu.exceptions.InvalidParameterException;
-import assemble.edu.exceptions.MissingParameterException;
-import assemble.edu.exceptions.OperationFailedException;
-import assemble.edu.exceptions.PermissionDeniedException;
+import jakarta.xml.ws.BindingProvider;
+import za.ac.nwu.wsdl.courseoffering.AcademicPeriodInfo;
+import za.ac.nwu.wsdl.courseoffering.ContextInfo;
+import za.ac.nwu.wsdl.courseoffering.CourseOfferingService;
+import za.ac.nwu.wsdl.courseoffering.CourseOfferingService_Service;
+import za.ac.nwu.wsdl.courseoffering.DoesNotExistException_Exception;
+import za.ac.nwu.wsdl.courseoffering.InvalidParameterException_Exception;
+import za.ac.nwu.wsdl.courseoffering.MissingParameterException_Exception;
+import za.ac.nwu.wsdl.courseoffering.ModuleOfferingInfo;
+import za.ac.nwu.wsdl.courseoffering.ModuleOfferingSearchCriteriaInfo;
+import za.ac.nwu.wsdl.courseoffering.OperationFailedException_Exception;
+import za.ac.nwu.wsdl.courseoffering.PermissionDeniedException_Exception;
 
 /**
  * author: Jaco Gillman
@@ -46,16 +49,13 @@ public class ModuleSearch {
         List<ModuleOffering> modules = new ArrayList<ModuleOffering>();
 		TreeSet<ModuleOffering> moduleSet = new TreeSet<ModuleOffering>();
 		Calendar calendar = Calendar.getInstance();
-
-		String envTypeKey = settingsProperties.getProperty("ws.module.env.type.key",
-				"/PROD/CURRICULUM-DELIVERY-COURSEOFFERINGSERVICE/V3");
-		String contextInfoUsername = settingsProperties.getProperty("nwu.context.info.username", "sapiappreadprod");
-		String contextInfoPassword = settingsProperties.getProperty("nwu.context.info.password", "5p@ssw0rd4pr0dr");
-
+		
 		AcademicPeriodInfo academicPeriodInfo = new AcademicPeriodInfo();
 		academicPeriodInfo.setAcadPeriodtTypeKey("vss.code.AcademicPeriod.YEAR");
 		academicPeriodInfo.setAcadPeriodValue(Integer.toString(calendar.get(Calendar.YEAR)));
-		ContextInfo contextInfo = new ContextInfo("SOAPUI");
+		
+		ContextInfo contextInfo = new ContextInfo();
+		contextInfo.setSubscriberClientName("SOAPUI");		
 
 		ModuleOfferingSearchCriteriaInfo searchCriteria = new ModuleOfferingSearchCriteriaInfo();
 		searchCriteria.setAcademicPeriod(academicPeriodInfo);
@@ -80,10 +80,16 @@ public class ModuleSearch {
 		}                
 
 		try {
-			CourseOfferingService courseOfferingService = (CourseOfferingService) CourseOfferingServiceClientFactory
-					.getCourseOfferingService(envTypeKey, contextInfoUsername, contextInfoPassword);
-			List<ModuleOfferingInfo> moduleOfferingList = courseOfferingService
-					.getModuleOfferingBySearchCriteria(searchCriteria, "vss.code.LANGUAGE.2", contextInfo);
+			URL wsdlURL = new URL(settingsProperties
+	                .getProperty("ws.module.url", "http://workflow7prd.nwu.ac.za:80/curriculum-delivery-v3/CourseOfferingService?wsdl"));
+			
+			CourseOfferingService_Service service = new CourseOfferingService_Service(wsdlURL);
+	        CourseOfferingService port = service.getCourseOfferingServicePort();
+
+			((BindingProvider) port).getRequestContext().put( BindingProvider.USERNAME_PROPERTY, settingsProperties.getProperty("nwu.context.info.username", "sapiappreadprod"));
+			((BindingProvider) port).getRequestContext().put( BindingProvider.PASSWORD_PROPERTY, settingsProperties.getProperty("nwu.context.info.password", "5p@ssw0rd4pr0dr"));
+
+			List<ModuleOfferingInfo> moduleOfferingList = port.getModuleOfferingBySearchCriteria(searchCriteria, "vss.code.LANGUAGE.2", contextInfo);
 
 			int moduleIdCnt = 1;
 			for (ModuleOfferingInfo moduleOfferingInfo : moduleOfferingList) {
@@ -93,7 +99,7 @@ public class ModuleSearch {
 																				 // value
 				moduleOffering.setModuleSubjectCode(moduleOfferingInfo.getModuleSubjectCode());
 				moduleOffering.setModuleNumber(moduleOfferingInfo.getModuleNumber());
-				moduleOffering.setModuleSite(moduleOfferingInfo.getModuleSite());
+				moduleOffering.setModuleSite("" + Math.abs(Integer.parseInt(moduleOfferingInfo.getModuleSite())));
 				moduleOffering.setMethodOfDeliveryTypeKey(moduleOfferingInfo.getMethodOfDeliveryTypeKey());
 				moduleOffering.setModeOfDeliveryTypeKey(moduleOfferingInfo.getModeOfDeliveryTypeKey());
 				moduleOffering.setLanguageTypeKey(moduleOfferingInfo.getLanguageTypeKey());
@@ -121,40 +127,48 @@ public class ModuleSearch {
 				moduleIdCnt += 1;
 			}
 
-		} catch (InvalidParameterException e) {
-			log.error("OfferingTracsService - InvalidParameter: ", e);
+		}  catch (MalformedURLException e) {
+			log.error("CourseOfferingService - MalformedURLException: ", e);
 
 			IntegrationException ie = new IntegrationException("Could not retrieve the modules ", e);
 			IntegrationError error = new IntegrationError();
 			error.setErrorMessage(e.getMessage());
 			ie.addError(error);
 			throw ie;
-		} catch (DoesNotExistException e) {
-			log.error("OfferingTracsService - DoesNotExist: ", e);
+		} catch (DoesNotExistException_Exception e) {
+			log.error("CourseOfferingService - DoesNotExistException_Exception: ", e);
 
 			IntegrationException ie = new IntegrationException("Could not retrieve the modules ", e);
 			IntegrationError error = new IntegrationError();
 			error.setErrorMessage(e.getMessage());
 			ie.addError(error);
 			throw ie;
-		} catch (OperationFailedException e) {
-			log.error("OfferingTracsService - OperationFailed: ", e);
+		} catch (InvalidParameterException_Exception e) {
+			log.error("CourseOfferingService - InvalidParameterException_Exception: ", e);
 
 			IntegrationException ie = new IntegrationException("Could not retrieve the modules ", e);
 			IntegrationError error = new IntegrationError();
 			error.setErrorMessage(e.getMessage());
 			ie.addError(error);
 			throw ie;
-		} catch (MissingParameterException e) {
-			log.error("OfferingTracsService - MissingParameter: ", e);
+		} catch (MissingParameterException_Exception e) {
+			log.error("CourseOfferingService - MissingParameterException_Exception: ", e);
 
 			IntegrationException ie = new IntegrationException("Could not retrieve the modules ", e);
 			IntegrationError error = new IntegrationError();
 			error.setErrorMessage(e.getMessage());
 			ie.addError(error);
 			throw ie;
-		} catch (PermissionDeniedException e) {
-			log.error("OfferingTracsService - PermissionDenied: ", e);
+		} catch (OperationFailedException_Exception e) {
+			log.error("CourseOfferingService - OperationFailedException_Exception: ", e);
+
+			IntegrationException ie = new IntegrationException("Could not retrieve the modules ", e);
+			IntegrationError error = new IntegrationError();
+			error.setErrorMessage(e.getMessage());
+			ie.addError(error);
+			throw ie;
+		} catch (PermissionDeniedException_Exception e) {
+			log.error("CourseOfferingService - PermissionDeniedException_Exception: ", e);
 
 			IntegrationException ie = new IntegrationException("Could not retrieve the modules ", e);
 			IntegrationError error = new IntegrationError();
@@ -162,9 +176,9 @@ public class ModuleSearch {
 			ie.addError(error);
 			throw ie;
 		} catch (ConnectionNotEstablishedException e) {
-			log.error("OfferingTracsService - ConnectionNotEstablishedException: ", e);
+			log.error("CourseOfferingService - ConnectionNotEstablishedException: ", e);
 
-			IntegrationException ie = new IntegrationException("Could not retrieve the linked lecturers ", e);
+			IntegrationException ie = new IntegrationException("Could not retrieve the linked lecturers  ", e);
 			IntegrationError error = new IntegrationError();
 			error.setErrorMessage(e.getMessage());
 			ie.addError(error);
