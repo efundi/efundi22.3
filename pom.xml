@@ -124,6 +124,7 @@
                 <module>scorm</module>
                 <module>blogwow</module>
                 <module>cmprovider</module>
+                <module>cm-scheduler-base</module>
             </modules>
         </profile>
         <profile>
@@ -215,6 +216,7 @@
                 <module>scorm</module>
                 <module>blogwow</module>
                 <module>cmprovider</module>
+                <module>cm-scheduler-base</module>
             </modules>
         </profile>
 
