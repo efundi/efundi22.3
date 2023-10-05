@@ -1,18 +1,23 @@
 package za.ac.nwu.sql;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -25,6 +30,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import za.ac.nwu.model.Campus;
 import za.ac.nwu.model.Lecturer;
@@ -582,9 +592,14 @@ public class DataManager {
 					xmlBody.toString(), serverConfigurationService.getString("nwu.context.info.username", "sapiappreadprod"),
 					serverConfigurationService.getString("nwu.context.info.password", "5p@ssw0rd4pr0dr"));
 
-			studentUserNames = new ArrayList<>(Arrays.asList(result.split(",")));
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new InputSource(new StringReader(result)));
+            Element rootElement = document.getDocumentElement();
+            
+			studentUserNames = getString("return", rootElement);
 
-			LOG.info("Performing getUsers (result=" + result + ")");
+			LOG.info("Performing getUsers (studentUserNames=" + studentUserNames + ")");
 			
 		} catch (Exception e) {
 			LOG.error("Performing getUsers (result=" + result + ")");
@@ -594,7 +609,57 @@ public class DataManager {
 
 		return studentUserNames;
 	}
+	
+	/**
+	 * 
+	 * @param tagName
+	 * @param element
+	 * @return
+	 */
+	protected static List<String> getString(String tagName, Element element) {
+        NodeList list = element.getElementsByTagName(tagName);
+        List<String> result = new ArrayList<String>();
+        
+        for (Node node : iterable(list)) {
+            result.add(node.getFirstChild().getNodeValue());
+        }
 
+        return result;
+    }
+    
+	/**
+	 * 
+	 * @param nodeList
+	 * @return
+	 */
+    public static Iterable<Node> iterable(final NodeList nodeList) {
+        return () -> new Iterator<Node>() {
+
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < nodeList.getLength();
+            }
+
+            @Override
+            public Node next() {
+                if (!hasNext())
+                    throw new NoSuchElementException();
+                return nodeList.item(index++);
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param url
+     * @param xmlBody
+     * @param userName
+     * @param password
+     * @return
+     * @throws Exception
+     */
 	private String invokeSOAPService(String url, String xmlBody, String userName, String password) throws Exception {
 
 		String result = "";
