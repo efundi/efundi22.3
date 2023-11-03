@@ -1,3 +1,7 @@
+assets/.package-lock.json
+assets/@lion
+assets/@open-wc
+
 **/*.js
 !js/**/*.js
 !src/**/*.js
