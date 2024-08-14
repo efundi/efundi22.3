@@ -1,33 +1,65 @@
+CREATE TABLE `cm_curriculum_course` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `campus` varchar(2) NOT NULL,
+  `year` int(11) NOT NULL,
+  `term` varchar(45) NOT NULL,
+  `course_code` varchar(45) NOT NULL,
+  `course_descr` varchar(99) NOT NULL,
+  `section_code` varchar(8) NOT NULL,
+  `section_descr` varchar(45) NOT NULL,
+  `instructor_number` int(11) NOT NULL,
+  `instructor_name` varchar(45) NOT NULL,
+  `audit_date_time` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQUE_index` (`campus`,`year`,`term`,`course_code`,`section_code`,`instructor_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `cm_year_campus` (
-  `YEAR_CAMPUS_ID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `YEAR` int(4) NOT NULL,
-  `CAMPUS_CODE` varchar(4) NOT NULL,
-  PRIMARY KEY (`YEAR_CAMPUS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+CREATE TABLE `cm_student_enrollment` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nwu_number` VARCHAR(45) NOT NULL ,
+  `student_status` VARCHAR(45) NOT NULL ,
+  `enrol_end_date` DATETIME NULL ,
+  `presentation_method` VARCHAR(45) NOT NULL ,
+  `mode_of_delivery` VARCHAR(45) NOT NULL ,
+  `faculty` VARCHAR(45) NOT NULL ,
+  `campus_code` VARCHAR(45) NOT NULL ,
+  `program_version_code` VARCHAR(45) NOT NULL ,
+  `registration_date` DATETIME NOT NULL ,
+  `enrollment_year` VARCHAR(45) NOT NULL ,
+  `year_level` VARCHAR(45) NOT NULL ,
+  `course` VARCHAR(45) NOT NULL ,
+  `practical_type` VARCHAR(45) NULL ,
+  `learning_type` VARCHAR(45) NULL ,
+  `is_practical` BIT(1) NULL ,
+  `is_research` BIT(1) NULL ,
+  `term` VARCHAR(45) NOT NULL ,
+  `term_start_date` DATE NOT NULL ,
+  `term_end_date` DATE NOT NULL ,
+  `section_code` VARCHAR(8) NOT NULL ,
+  `section_descr` VARCHAR(45) NOT NULL ,
+  `audit_date_time` DATETIME NOT NULL ,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQUE_index` (`nwu_number`,`program_version_code`,`enrollment_year`,`course`,`term`,`section_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-CREATE TABLE `cm_lecturer` (
-  `LECTURER_ID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `YEAR_CAMPUS_F_ID` bigint(20) NOT NULL,
-  `USERNAME` varchar(64) NOT NULL,
-  PRIMARY KEY (`LECTURER_ID`),
-  KEY `FK_YEAR_CAMPUS_F_ID` (`YEAR_CAMPUS_F_ID`),
-  CONSTRAINT `FK_YEAR_CAMPUS_F_ID` FOREIGN KEY (`YEAR_CAMPUS_F_ID`) REFERENCES `cm_year_campus` (`YEAR_CAMPUS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
-
-
-CREATE TABLE `cm_modules` (
-  `MODULE_ID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `LECTURER_F_ID` bigint(20) NOT NULL,
-  `COURSE_CODE` varchar(16) NOT NULL,
-  `COURSE_LEVEL` varchar(8) NOT NULL,
-  `COURSE_MODULE` varchar(8) NOT NULL,
-  `STATUS` varchar(32) NOT NULL,
-  `METHOD_OF_DEL` varchar(64) DEFAULT NULL,
-  `PRESENT_CAT` varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`MODULE_ID`),
-  KEY `FK_LECTURER_F_ID` (`LECTURER_F_ID`),
-  CONSTRAINT `FK_LECTURER_F_ID` FOREIGN KEY (`LECTURER_F_ID`) REFERENCES `cm_lecturer` (`LECTURER_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8;
-
+CREATE TABLE `cm_course_section_instructor` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_code` VARCHAR(45) NOT NULL ,
+  `description` VARCHAR(45) NOT NULL ,
+  `status` VARCHAR(45) NOT NULL ,
+  `published_code` VARCHAR(45) NOT NULL ,
+  `term` VARCHAR(45) NOT NULL ,
+  `start_date` DATE NOT NULL ,
+  `end_date` DATE NOT NULL ,
+  `campus` VARCHAR(45) NOT NULL ,
+  `section_code` VARCHAR(8) NOT NULL ,
+  `section_descr` VARCHAR(45) NOT NULL ,
+  `section_start_date` DATE NOT NULL ,
+  `section_end_date` DATE NOT NULL ,
+  `nwu_number` VARCHAR(45) NOT NULL ,
+  `instructor_name` VARCHAR(45) NOT NULL ,
+  `max_students` INT NOT NULL ,
+  `audit_date_time` DATETIME NOT NULL ,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQUE_index` (`course_code`,`term`,`campus`,`section_code`,`nwu_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
