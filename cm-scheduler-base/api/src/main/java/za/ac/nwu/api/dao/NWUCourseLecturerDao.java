@@ -20,9 +20,8 @@ public interface NWUCourseLecturerDao {
 
     public boolean deleteLecturer(Long id);
 
-	public List<NWULecturer> getLecturersByAcadYearOrderBySakaiSiteId(int year);
+	public List<NWULecturer> getLecturersByYearOrderBySakaiSiteId(int year);
 
-	public List<NWULecturer> getLecturersByAcadYear(int year);
+	public List<NWULecturer> getLecturersByYear(int year);
 
-	public List<NWULecturer> getLecturersForCurrentAndNextAcadYear(int year);
 }

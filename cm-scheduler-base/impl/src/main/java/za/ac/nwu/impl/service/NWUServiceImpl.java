@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.SecurityAdvisor;
 import org.sakaiproject.authz.api.SecurityService;
@@ -18,6 +17,7 @@ import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
+import org.sakaiproject.id.api.IdManager;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.SiteService;
@@ -58,6 +58,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private SecurityService securityService;
 	private CourseManagementService cmService;
 	private CourseManagementAdministration cmAdmin;
+	private IdManager idManager;
 
 	private ApplicationContext applicationContext;
 
@@ -80,30 +81,28 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private static final String TOOL_ID_SYNOPTIC_CHAT = "sakai.synoptic.chat";
 	private static final String TOOL_ID_SYNOPTIC_MESSAGECENTER = "sakai.synoptic.messagecenter";
 
-	public static final String NWU_PUBLISH_SITE_NOT_ALLOWED = "nwu_publish_site_not_allowed";
-
 	private final static List<String> DEFAULT_TOOL_ID_MAP;
 	static {
 		DEFAULT_TOOL_ID_MAP = new ArrayList<String>();
-		DEFAULT_TOOL_ID_MAP.add("sakai.announcements");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.announcements");
 		DEFAULT_TOOL_ID_MAP.add("sakai.siteinfo");
-		DEFAULT_TOOL_ID_MAP.add("sakai.resources");
-		DEFAULT_TOOL_ID_MAP.add("sakai.syllabus");
-		DEFAULT_TOOL_ID_MAP.add("sakai.lessonbuildertool");
-		DEFAULT_TOOL_ID_MAP.add("sakai.schedule");
-		DEFAULT_TOOL_ID_MAP.add("sakai.forums");
-		DEFAULT_TOOL_ID_MAP.add("sakai.assignment.grades");
-		DEFAULT_TOOL_ID_MAP.add("sakai.samigo");
-		DEFAULT_TOOL_ID_MAP.add("sakai.rubrics");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.resources");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.syllabus");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.lessonbuildertool");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.schedule");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.forums");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.assignment.grades");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.samigo");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.rubrics");
 		DEFAULT_TOOL_ID_MAP.add("sakai.gradebookng");
-		DEFAULT_TOOL_ID_MAP.add("sakai.messages");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.messages");
 		DEFAULT_TOOL_ID_MAP.add("sakai.sitestats");
-		DEFAULT_TOOL_ID_MAP.add("sakai.poll");
-		DEFAULT_TOOL_ID_MAP.add("sakai.dropbox");
-		DEFAULT_TOOL_ID_MAP.add("sakai.chat");
-		DEFAULT_TOOL_ID_MAP.add("sakai.commons");
-		DEFAULT_TOOL_ID_MAP.add("sakai.mailtool");
-		DEFAULT_TOOL_ID_MAP.add("sakai.mailbox");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.poll");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.dropbox");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.chat");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.commons");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.mailtool");
+//		DEFAULT_TOOL_ID_MAP.add("sakai.mailbox");
 	}
 
 	private final static Map<String, String> TOOLS_WITH_SYNOPTIC_ID_MAP;
@@ -135,7 +134,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		Calendar cal = Calendar.getInstance();
 		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
 		year = year != 0 ? year : cal.get(Calendar.YEAR);
-		List<NWUCourse> courses = courseDao.getCoursesByAcadYear(year);//Also by Status, add Status column, if empty process, otherwise skip. after insert update to inserted or whatever. modifiedDate?
+		List<NWUCourse> courses = courseDao.getCoursesByYear(year);//Also by Status, add Status column, if empty process, otherwise skip. after insert update to inserted or whatever. modifiedDate?
 		if (!courses.isEmpty()) {
 
 			// Become admin in order to add sites
@@ -201,7 +200,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 		// Get all existing course from Database for current year and no Sakai site id
 		List<NWUCourse> courses = courseDao
-				.getCoursesByAcadYear(Calendar.getInstance().get(Calendar.YEAR));
+				.getCoursesByYear(Calendar.getInstance().get(Calendar.YEAR));
 		
 		//GET CM DATA
 
@@ -243,15 +242,12 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		log.info("NWU - Creating unpublished eFundi Course Site");
 		Site newSite = null;
 		try {
-			String siteName = generateSiteName(course.getYear(), course.getCourseCode(), course.getCampus(),
-					course.getSectionCode());
-			if (StringUtils.isBlank(siteName))
-				return null;
-			String siteId = siteName.replace(BLANK_SPACE, HYPHEN);
+//			String siteId = siteName.replace(BLANK_SPACE, HYPHEN);
+			String siteId = idManager.createUuid();
 			if(!siteService.siteExists(siteId)) {
 				String description = course.getCourseDescr();
 				newSite = siteService.addSite(siteId, "course");
-				newSite.setTitle(siteName);
+				newSite.setTitle(generateSiteName(course.getYear(), course.getCourseCode()));
 				newSite.setDescription(description);
 				newSite.setShortDescription(description);
 				newSite.setPublished(false);
@@ -278,8 +274,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					log.info("IdNotFoundException AcademicSession with id " + termEid);
 				}
 
-//				course.setSakaiSiteId(newSite.getId());
-//				courseDao.updateCourse(course);
+				course.setEfundiSiteId(newSite.getId());
+				courseDao.updateCourse(course);
 
 				log.info("NWU - New Course site created: " + siteId);
 			}
@@ -386,7 +382,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //	private String generateTerm(NWUCourse course) {
 //		StringBuilder term = new StringBuilder();
 //		term.append(SEMESTER_SEM).append(BLANK_SPACE).append(course.getSemCode()).append(BLANK_SPACE);
-//		int yearLastTwoDigits = course.getAcadYear() % 100;
+//		int yearLastTwoDigits = course.getYear() % 100;
 //		term.append("" + (yearLastTwoDigits - 1)).append("/" + yearLastTwoDigits);
 //		return term.toString();
 //	}
@@ -400,7 +396,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //	private String generateTermEid(NWUCourse course) {
 //		StringBuilder termEid = new StringBuilder();
 //		termEid.append(SEMESTER_S).append(course.getSemCode()).append(HYPHEN);
-//		int yearLastTwoDigits = course.getAcadYear() % 100;
+//		int yearLastTwoDigits = course.getYear() % 100;
 //		termEid.append("" + (yearLastTwoDigits - 1)).append("" + yearLastTwoDigits);
 //		return termEid.toString();
 //	}
@@ -414,7 +410,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //	private String generateTermDescription(NWUCourse course) {
 //		StringBuilder term = new StringBuilder();
 //		term.append(course.getSemester()).append(BLANK_SPACE);
-//		int yearLastTwoDigits = course.getAcadYear() % 100;
+//		int yearLastTwoDigits = course.getYear() % 100;
 //		term.append("" + (yearLastTwoDigits - 1)).append("/" + yearLastTwoDigits);
 //		return term.toString();
 //	}
@@ -431,7 +427,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //		description.append(course.getCourse()).append(BLANK_SPACE);
 //		description.append(course.getCampus()).append(BLANK_SPACE);
 //		description.append(course.getSemester()).append(BLANK_SPACE);
-//		description.append("" + course.getAcadYear());
+//		description.append("" + course.getYear());
 //		return description.toString();
 //	}
 //
@@ -462,7 +458,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //	 * @return
 //	 */
 //	private String generateSiteName(NWUEnrollment enrollment) {
-//		return generateSiteName(enrollment.getAcadYear(), enrollment.getCourseCode(), enrollment.getCampusCode(),
+//		return generateSiteName(enrollment.getYear(), enrollment.getCourseCode(), enrollment.getCampusCode(),
 //				enrollment.getSemCode());
 //	}
 //
@@ -473,36 +469,46 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //	 * @return
 //	 */
 //	private String generateSiteName(NWULecturer lecturer) {
-//		return generateSiteName(lecturer.getAcadYear(), lecturer.getCourse(), lecturer.getOfferingType(),
+//		return generateSiteName(lecturer.getYear(), lecturer.getCourse(), lecturer.getOfferingType(),
 //				lecturer.getSemester());
 //	}
 
 	/**
 	 * Helper method to create Sakai course site title value
 	 * 
-	 * @param acadYear
+	 * @param year
 	 * @param courseCode
 	 * @param campusCode
 	 * @param semCode
 	 * @return
 	 */
-	private String generateSiteName(int acadYear, String courseCode, String campusCode, String semCode) {
-		StringBuilder siteid = new StringBuilder();
+//	private String generateSiteName(int year, String courseCode, String campusCode, String semCode) {
+//		StringBuilder siteid = new StringBuilder();
+//		try {
+//			String courseSplitArray[] = courseCode.split("(?<=\\D)(?=\\d)");
+//			String campusCodeVal = campusCode.startsWith("0") ? campusCode.substring(1) : campusCode;
+//			int yearLastTwoDigits = year % 100;
+//
+//			siteid.append(courseSplitArray[0]).append(BLANK_SPACE).append(courseSplitArray[1]).append(BLANK_SPACE);
+//			siteid.append(campusCodeVal).append(BLANK_SPACE);
+//			siteid.append(SEMESTER_S).append(semCode).append(HYPHEN);
+//			siteid.append("" + (yearLastTwoDigits - 1)).append("" + yearLastTwoDigits);
+//		} catch (Exception e) {
+//			log.warn("Could not create siteId generateSiteId() for : year:" + year + ", courseCode: "
+//					+ courseCode + ", campusCode: " + campusCode + ", semCode: " + semCode);
+//			return null;
+//		}
+//		return siteid.toString();
+//	}
+	private String generateSiteName(int year, String courseCode) {
+		StringBuilder siteId = new StringBuilder();
 		try {
-			String courseSplitArray[] = courseCode.split("(?<=\\D)(?=\\d)");
-			String campusCodeVal = campusCode.startsWith("0") ? campusCode.substring(1) : campusCode;
-			int yearLastTwoDigits = acadYear % 100;
-
-			siteid.append(courseSplitArray[0]).append(BLANK_SPACE).append(courseSplitArray[1]).append(BLANK_SPACE);
-			siteid.append(campusCodeVal).append(BLANK_SPACE);
-			siteid.append(SEMESTER_S).append(semCode).append(HYPHEN);
-			siteid.append("" + (yearLastTwoDigits - 1)).append("" + yearLastTwoDigits);
+			siteId.append(courseCode).append(HYPHEN).append("" + year);
 		} catch (Exception e) {
-			log.warn("Could not create siteId generateSiteId() for : acadYear:" + acadYear + ", courseCode: "
-					+ courseCode + ", campusCode: " + campusCode + ", semCode: " + semCode);
+			log.warn("Could not create siteId generateSiteId() for : year:" + year + ", courseCode: " + courseCode);
 			return null;
 		}
-		return siteid.toString();
+		return siteId.toString();
 	}
 
 	public NWUCourseDao getCourseDao() {
@@ -600,6 +606,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setCmAdmin(CourseManagementAdministration cmAdmin) {
 		this.cmAdmin = cmAdmin;
+	}	
+
+	public IdManager getIdManager() {
+		return idManager;
+	}
+
+	public void setIdManager(IdManager idManager) {
+		this.idManager = idManager;
 	}
 
 	@Override

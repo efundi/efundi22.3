@@ -25,9 +25,8 @@ import lombok.ToString;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 //@NamedQueries({
-//		@NamedQuery(name = "FindEnrollmentsByAcadYear", query = "SELECT e FROM NWUEnrollment e WHERE e.acadYear = :acadYear"),
-//		@NamedQuery(name = "FindEnrollmentsByAcadYearOrderBySakaiSiteId", query = "SELECT e FROM NWUEnrollment e WHERE e.acadYear = :acadYear ORDER BY sakaiSiteId"),
-//		@NamedQuery(name = "FindEnrollmentsForCurrentAndNextAcadYear", query = "SELECT e FROM NWUEnrollment e WHERE (e.acadYear = :acadYear OR e.acadYear = :acadYearNext) ORDER BY sakaiSiteId") })
+//		@NamedQuery(name = "FindEnrollmentsByYear", query = "SELECT e FROM NWUEnrollment e WHERE e.year = :year"),
+//		@NamedQuery(name = "FindEnrollmentsByYearOrderBySakaiSiteId", query = "SELECT e FROM NWUEnrollment e WHERE e.year = :year ORDER BY sakaiSiteId") })
 public class NWUEnrollment {
 
 	@Id

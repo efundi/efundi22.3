@@ -20,7 +20,7 @@ public interface NWUCourseDao {
 
 	public boolean deleteCourse(Long id);
 
-	public List<NWUCourse> getCoursesByAcadYear(int year);
+	public List<NWUCourse> getCoursesByYear(int year);
 	
-	public NWUCourse findCourseForParams(int acadYear, String courseCode, String campusCode, String semCode);
+	public NWUCourse findCourseForParams(int year, String courseCode, String campusCode, String semCode);
 }

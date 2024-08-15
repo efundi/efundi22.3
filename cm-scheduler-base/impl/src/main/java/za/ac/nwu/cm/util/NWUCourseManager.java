@@ -1,21 +1,14 @@
 package za.ac.nwu.cm.util;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
-import javax.naming.NamingException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.coursemanagement.api.AcademicSession;
 import org.sakaiproject.coursemanagement.api.CourseManagementAdministration;
 import org.sakaiproject.coursemanagement.api.CourseManagementService;
 import org.sakaiproject.coursemanagement.api.CourseOffering;
-import org.sakaiproject.coursemanagement.api.EnrollmentSet;
 import org.sakaiproject.coursemanagement.api.SectionCategory;
 import org.sakaiproject.coursemanagement.api.exception.IdNotFoundException;
 import org.sakaiproject.user.api.UserDirectoryService;
@@ -111,7 +104,7 @@ public class NWUCourseManager {
             //If AcademicSession do not exist, create it.
 //            academicSession = cmAdmin.createAcademicSession(course.getTerm(), course.getTerm(), description,
 //                start.getTime(), end.getTime());
-			cmAdmin.createAcademicSession(course.getTerm(), course.getTerm(), "Academic Session for " + course.getTerm(), null, null);
+        	academicSession = cmAdmin.createAcademicSession(course.getTerm(), course.getTerm(), "Academic Session for " + course.getTerm(), null, null);
             log.info("Created AcademicSession with id " + course.getTerm());
         }
         List<String> acadSessionIds = new ArrayList<String>();

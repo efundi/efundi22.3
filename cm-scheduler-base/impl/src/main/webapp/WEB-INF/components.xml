@@ -108,6 +108,8 @@
 			ref="org.sakaiproject.coursemanagement.api.CourseManagementService" />
 		<property name="cmAdmin"
 			ref="org.sakaiproject.coursemanagement.api.CourseManagementAdministration" />
+		<property name="idManager"
+			ref="org.sakaiproject.id.api.IdManager" />
 	</bean>
 	
 </beans>

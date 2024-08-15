@@ -53,13 +53,13 @@ public class NWUCourseLecturerDaoImpl extends HibernateDaoSupport implements NWU
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWULecturer> getLecturersByAcadYearOrderBySakaiSiteId(int year) {
+	public List<NWULecturer> getLecturersByYearOrderBySakaiSiteId(int year) {
 
 		List<NWULecturer> lecturers = new ArrayList<>();
 
 		HibernateCallback<List<NWULecturer>> hcb = session -> {
-			Query q = session.getNamedQuery("FindLecturersByAcadYearOrderBySakaiSiteId");
-			q.setParameter("acadYear", year);
+			Query q = session.getNamedQuery("FindLecturersByYearOrderBySakaiSiteId");
+			q.setParameter("year", year);
 			return q.list();
 		};
 
@@ -70,30 +70,13 @@ public class NWUCourseLecturerDaoImpl extends HibernateDaoSupport implements NWU
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWULecturer> getLecturersByAcadYear(int year) {
+	public List<NWULecturer> getLecturersByYear(int year) {
 
 		List<NWULecturer> lecturers = new ArrayList<>();
 
 		HibernateCallback<List<NWULecturer>> hcb = session -> {
-			Query q = session.getNamedQuery("FindLecturersByAcadYear");
-			q.setParameter("acadYear", year);
-			return q.list();
-		};
-
-		lecturers = getHibernateTemplate().execute(hcb);
-
-		return lecturers;
-	}
-
-	@Override
-	public List<NWULecturer> getLecturersForCurrentAndNextAcadYear(int year) {
-
-		List<NWULecturer> lecturers = new ArrayList<>();
-
-		HibernateCallback<List<NWULecturer>> hcb = session -> {
-			Query q = session.getNamedQuery("FindLecturersForCurrentAndNextAcadYear");
-			q.setParameter("acadYear", year);
-			q.setParameter("acadYearNext", year + 1);
+			Query q = session.getNamedQuery("FindLecturersByYear");
+			q.setParameter("year", year);
 			return q.list();
 		};
 

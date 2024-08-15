@@ -58,12 +58,12 @@ public class NWUCourseDaoImpl extends HibernateDaoSupport implements NWUCourseDa
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWUCourse> getCoursesByAcadYear(int year) {
+	public List<NWUCourse> getCoursesByYear(int year) {
 
 		List<NWUCourse> courses = new ArrayList<>();
 
 		HibernateCallback<List<NWUCourse>> hcb = session -> {
-			Query q = session.getNamedQuery("FindCoursesByAcadYear");
+			Query q = session.getNamedQuery("FindCoursesByYear");
 			q.setParameter("year", year);
 			return q.list();
 		};

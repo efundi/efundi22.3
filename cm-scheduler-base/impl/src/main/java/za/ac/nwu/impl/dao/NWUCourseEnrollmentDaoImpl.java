@@ -32,13 +32,13 @@ public class NWUCourseEnrollmentDaoImpl extends HibernateDaoSupport implements N
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWUEnrollment> getEnrollmentsByAcadYear(int year) {
+	public List<NWUEnrollment> getEnrollmentsByYear(int year) {
 
 		List<NWUEnrollment> enrollments = new ArrayList<>();
 
 		HibernateCallback<List<NWUEnrollment>> hcb = session -> {
-			Query q = session.getNamedQuery("FindEnrollmentsByAcadYear");
-			q.setParameter("acadYear", year);
+			Query q = session.getNamedQuery("FindEnrollmentsByYear");
+			q.setParameter("year", year);
 			return q.list();
 		};
 
@@ -73,30 +73,13 @@ public class NWUCourseEnrollmentDaoImpl extends HibernateDaoSupport implements N
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWUEnrollment> getEnrollmentsByAcadYearOrderBySakaiSiteId(int year) {
+	public List<NWUEnrollment> getEnrollmentsByYearOrderBySakaiSiteId(int year) {
 
 		List<NWUEnrollment> enrollments = new ArrayList<>();
 
 		HibernateCallback<List<NWUEnrollment>> hcb = session -> {
-			Query q = session.getNamedQuery("FindEnrollmentsByAcadYearOrderBySakaiSiteId");
-			q.setParameter("acadYear", year);
-			return q.list();
-		};
-
-		enrollments = getHibernateTemplate().execute(hcb);
-
-		return enrollments;
-	}
-
-	@Override
-	public List<NWUEnrollment> getEnrollmentsForCurrentAndNextAcadYear(int year) {
-
-		List<NWUEnrollment> enrollments = new ArrayList<>();
-
-		HibernateCallback<List<NWUEnrollment>> hcb = session -> {
-			Query q = session.getNamedQuery("FindEnrollmentsForCurrentAndNextAcadYear");
-			q.setParameter("acadYear", year);
-			q.setParameter("acadYearNext", year + 1);
+			Query q = session.getNamedQuery("FindEnrollmentsByYearOrderBySakaiSiteId");
+			q.setParameter("year", year);
 			return q.list();
 		};
 

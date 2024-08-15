@@ -27,9 +27,7 @@ import lombok.ToString;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 @NamedQueries({
-		@NamedQuery(name = "FindCoursesByAcadYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year") })
-//@NamedQueries({
-//	@NamedQuery(name = "FindCoursesByAcadYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year AND c.sakaiSiteId is null") })
+	@NamedQuery(name = "FindCoursesByYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year AND (c.efundiSiteId is null OR c.efundiSiteId = '')") })
 
 public class NWUCourse {
 
@@ -64,6 +62,9 @@ public class NWUCourse {
 	@Column(name = "section_descr", length = 45, nullable = false)
 	private String sectionDescr;
 
+	@Column(name = "efundi_site_id", length = 99, nullable = true)
+	private String efundiSiteId;
+
 	@EqualsAndHashCode.Include
 	@Column(name = "instructor_number", nullable = false)
 	private Integer instructorNumber;
@@ -74,15 +75,11 @@ public class NWUCourse {
     @Type(type = "org.hibernate.type.InstantType")
 	@Column(name = "audit_date_time", nullable = true)
 	private Instant auditDateTime;
-
-	// @OneToOne
-	// @JoinColumn(foreignKey = @ForeignKey(name = "fk_course_site"))
-	// private SakaiSite site;
-
+    
 	public NWUCourse() {
 	}
 
-	public NWUCourse(String campus, Integer year, String term, String courseCode, String courseDescr, String sectionCode, String sectionDescr, Integer instructorNumber,
+	public NWUCourse(String campus, Integer year, String term, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, Integer instructorNumber,
 			String instructorName, Instant auditDateTime) {
 		this.campus = campus;
 		this.year = year;
@@ -91,8 +88,8 @@ public class NWUCourse {
 		this.courseDescr = courseDescr;
 		this.sectionCode = sectionCode;
 		this.sectionDescr = sectionDescr;
+		this.efundiSiteId = efundiSiteId;
 		this.instructorNumber = instructorNumber;
-//		this.sakaiSiteId = sakaiSiteId;
 		this.instructorName = instructorName;
 		this.auditDateTime = auditDateTime;
 	}

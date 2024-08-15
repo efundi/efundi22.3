@@ -17,14 +17,12 @@ public interface NWUCourseEnrollmentDao {
 
 	public List<NWUEnrollment> getEnrollments();
 
-	public List<NWUEnrollment> getEnrollmentsByAcadYear(int year);
-
-	public List<NWUEnrollment> getEnrollmentsForCurrentAndNextAcadYear(int year);
+	public List<NWUEnrollment> getEnrollmentsByYear(int year);
 
 	public NWUEnrollment getEnrollmentById(Long id);
 
 	public boolean deleteEnrollment(Long id);
 
-	public List<NWUEnrollment> getEnrollmentsByAcadYearOrderBySakaiSiteId(int year);
+	public List<NWUEnrollment> getEnrollmentsByYearOrderBySakaiSiteId(int year);
 
 }
