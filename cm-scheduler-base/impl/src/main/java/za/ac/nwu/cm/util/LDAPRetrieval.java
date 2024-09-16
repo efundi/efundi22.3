@@ -1,15 +1,22 @@
 package za.ac.nwu.cm.util;
 
 import java.util.Properties;
+import java.util.Set;
 
 import javax.naming.Context;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchResult;
 
 import org.sakaiproject.component.api.ServerConfigurationService;
 
 import lombok.extern.slf4j.Slf4j;
+import za.ac.nwu.api.model.NWULecturer;
+import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 @Slf4j
 public class LDAPRetrieval {
@@ -140,86 +147,86 @@ public class LDAPRetrieval {
         return ldapProperties;
     }
 
-//    public void setLecturerDetails(final Set<Lecturer> lecturers) throws Exception {
-//        try {
-//            setRosterUserDetails(lecturers,
-//                getRosterUserFilter(LECTURER_MEMBEROF_FILTER, lecturers));
-//            logRosterUserNotFoundWarnings(lecturers);
-//        }
-//        catch (Exception e) {
-//            log.error("An exception occurred while searching for LDAP lecturer users", e);
-//            throw e;
-//        }
-//    }
-//
-//    public void setStudentDetails(final Set<Student> students) throws Exception {
-//        try {
-//            setRosterUserDetails(students, getRosterUserFilter(STUDENT_MEMBEROF_FILTER, students));
-//            logRosterUserNotFoundWarnings(students);
-//        }
-//        catch (Exception e) {
-//            log.error("An exception occurred while searching for LDAP student users", e);
-//            throw e;
-//        }
-//    }
-//
-//    private void setRosterUserDetails(final Set<? extends RosterUser> rosterUsers, String filter)
-//            throws Exception {
-//        NamingEnumeration<SearchResult> results = context.search(baseURL + "??sub?" + filter, null);
-//        while (results.hasMoreElements()) {
-//            SearchResult element = results.nextElement();
-//            Attributes elementAttributes = element.getAttributes();
-//            Attribute userName = elementAttributes.get("cn");
-//            for (final RosterUser rosterUser : rosterUsers) {
-//                if (Utility.equals(rosterUser.getUserName(), (String) userName.get())) {
-//                    rosterUser.setFirstName(getUserAttribute(elementAttributes, (String) context
-//                            .getEnvironment().get("ldap.firstname")));
-//                    rosterUser.setSurname(getUserAttribute(elementAttributes, (String) context
-//                            .getEnvironment().get("ldap.surname")));
-//                    rosterUser.setEmail(getUserAttribute(elementAttributes, (String) context
-//                            .getEnvironment().get("ldap.email")));
-//                    rosterUser.setFoundInLDAP(true);
-//                    log.info("Set LDAP info for user " + rosterUser.getUserName());
-//                    break;
-//                }
-//            }
-//        }
-//    }
-//
-//    private String getUserAttribute(final Attributes elementAttributes, final String attributeId)
-//            throws Exception {
-//        Attribute attribute = elementAttributes.get(attributeId);
-//        if (attribute != null) {
-//            return (String) attribute.get();
-//        }
-//        return null;
-//    }
-//
-//    private String getRosterUserFilter(final String memberOfFilter,
-//            final Set<? extends RosterUser> rosterUsers) {
-//        StringBuilder filter = new StringBuilder("(&");
-//        filter.append(memberOfFilter);
-//        if (rosterUsers != null && !rosterUsers.isEmpty()) {
-//            filter.append("(|");
-//            for (RosterUser rosterUser : rosterUsers) {
-//                filter.append("(");
-//                filter.append("cn=");
-//                filter.append(rosterUser.getUserName());
-//                filter.append(")");
-//            }
-//            filter.append(")");
-//        }
-//        filter.append(")");
-//        return filter.toString();
-//    }
-//
-//    private void logRosterUserNotFoundWarnings(final Set<? extends RosterUser> rosterUsers) {
-//        for (RosterUser rosterUser : rosterUsers) {
-//            if (!rosterUser.isFoundInLDAP()) {
-//                log.warn("User with id " + rosterUser.getUserName() + " was not found in LDAP.");
-//            }
-//        }
-//    }
+    public void setLecturerDetails(final Set<RosterUser> lecturers) throws Exception {
+        try {
+            setRosterUserDetails(lecturers,
+                getRosterUserFilter(LECTURER_MEMBEROF_FILTER, lecturers));
+            logRosterUserNotFoundWarnings(lecturers);
+        }
+        catch (Exception e) {
+            log.error("An exception occurred while searching for LDAP lecturer users", e);
+            throw e;
+        }
+    }
+
+    public void setStudentDetails(final Set<RosterUser> students) throws Exception {
+        try {
+            setRosterUserDetails(students, getRosterUserFilter(STUDENT_MEMBEROF_FILTER, students));
+            logRosterUserNotFoundWarnings(students);
+        }
+        catch (Exception e) {
+            log.error("An exception occurred while searching for LDAP student users", e);
+            throw e;
+        }
+    }
+
+    private void setRosterUserDetails(final Set<? extends RosterUser> rosterUsers, String filter)
+            throws Exception {
+        NamingEnumeration<SearchResult> results = context.search(baseURL + "??sub?" + filter, null);
+        while (results.hasMoreElements()) {
+            SearchResult element = results.nextElement();
+            Attributes elementAttributes = element.getAttributes();
+            Attribute userName = elementAttributes.get("cn");
+            for (final RosterUser rosterUser : rosterUsers) {
+                if (Utility.equals(rosterUser.getUserName(), (String) userName.get())) {
+                    rosterUser.setFirstName(getUserAttribute(elementAttributes, (String) context
+                            .getEnvironment().get("ldap.firstname")));
+                    rosterUser.setSurname(getUserAttribute(elementAttributes, (String) context
+                            .getEnvironment().get("ldap.surname")));
+                    rosterUser.setEmail(getUserAttribute(elementAttributes, (String) context
+                            .getEnvironment().get("ldap.email")));
+                    rosterUser.setFoundInLDAP(true);
+                    log.info("Set LDAP info for user " + rosterUser.getUserName());
+                    break;
+                }
+            }
+        }
+    }
+
+    private String getUserAttribute(final Attributes elementAttributes, final String attributeId)
+            throws Exception {
+        Attribute attribute = elementAttributes.get(attributeId);
+        if (attribute != null) {
+            return (String) attribute.get();
+        }
+        return null;
+    }
+
+    private String getRosterUserFilter(final String memberOfFilter,
+            final Set<? extends RosterUser> rosterUsers) {
+        StringBuilder filter = new StringBuilder("(&");
+        filter.append(memberOfFilter);
+        if (rosterUsers != null && !rosterUsers.isEmpty()) {
+            filter.append("(|");
+            for (RosterUser rosterUser : rosterUsers) {
+                filter.append("(");
+                filter.append("cn=");
+                filter.append(rosterUser.getUserName());
+                filter.append(")");
+            }
+            filter.append(")");
+        }
+        filter.append(")");
+        return filter.toString();
+    }
+
+    private void logRosterUserNotFoundWarnings(final Set<? extends RosterUser> rosterUsers) {
+        for (RosterUser rosterUser : rosterUsers) {
+            if (!rosterUser.isFoundInLDAP()) {
+                log.warn("User with id " + rosterUser.getUserName() + " was not found in LDAP.");
+            }
+        }
+    }
 
     public DirContext getContext() {
         return context;

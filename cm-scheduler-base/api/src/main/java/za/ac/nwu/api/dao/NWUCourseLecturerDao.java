@@ -1,5 +1,6 @@
 package za.ac.nwu.api.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import za.ac.nwu.api.model.NWULecturer;
@@ -20,8 +21,6 @@ public interface NWUCourseLecturerDao {
 
     public boolean deleteLecturer(Long id);
 
-	public List<NWULecturer> getLecturersByYearOrderBySakaiSiteId(int year);
-
-	public List<NWULecturer> getLecturersByYear(int year);
+	public List<NWULecturer> getLecturersByCourseIdAndDate(Long courseId, Date date);
 
 }

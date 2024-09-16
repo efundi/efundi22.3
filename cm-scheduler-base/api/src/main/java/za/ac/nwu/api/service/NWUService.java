@@ -1,5 +1,9 @@
 package za.ac.nwu.api.service;
 
+import java.util.Date;
+
+import org.quartz.JobExecutionException;
+
 /**
  * 
  * NWU Service interface
@@ -9,12 +13,12 @@ package za.ac.nwu.api.service;
  */
 public interface NWUService {	
     
-    public void updateNWUCourseManagement();
+    public void updateNWUCourseManagement() throws JobExecutionException;
 
-    public void updateNWUeFundiCourseSites();
+    public void updateNWUeFundiCourseSites() throws JobExecutionException;
     
-    public void updateNWUCourseEnrollments();
+    public void updateNWUCourseEnrollments(Date previousFireTime) throws JobExecutionException;
 
-    public void updateNWUCourseLecturers();
+    public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException;
 
 }

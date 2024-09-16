@@ -236,7 +236,7 @@
                     <property name="name" value="za.ac.nwu.api.model.NWUCourse"/>
                 </bean>
                 <bean parent="org.sakaiproject.ignite.cache.atomic">
-                    <property name="name" value="za.ac.nwu.api.model.NWUEnrollment"/>
+                    <property name="name" value="za.ac.nwu.api.model.NWUStudentEnrollment"/>
                 </bean>
                 <bean parent="org.sakaiproject.ignite.cache.atomic">
                     <property name="name" value="za.ac.nwu.api.model.NWULecturer"/>

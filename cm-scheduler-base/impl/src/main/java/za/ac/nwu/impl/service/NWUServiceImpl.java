@@ -2,10 +2,12 @@ package za.ac.nwu.impl.service;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.quartz.JobExecutionException;
 import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.SecurityAdvisor;
 import org.sakaiproject.authz.api.SecurityService;
@@ -38,6 +40,8 @@ import za.ac.nwu.api.dao.NWUCourseDao;
 import za.ac.nwu.api.dao.NWUCourseEnrollmentDao;
 import za.ac.nwu.api.dao.NWUCourseLecturerDao;
 import za.ac.nwu.api.model.NWUCourse;
+import za.ac.nwu.api.model.NWULecturer;
+import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
 import za.ac.nwu.cm.util.NWUCourseManager;
 
@@ -126,15 +130,23 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	/**
 	 * Reads all course data from table cm_curriculum_course and create eFundi CM
 	 * data
+	 * 
+	 * @throws JobExecutionException
 	 */
-	public void updateNWUCourseManagement() {
+	public void updateNWUCourseManagement() throws JobExecutionException {
 
 		// Get all existing course from Database for current
 
-		Calendar cal = Calendar.getInstance();
-		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
-		year = year != 0 ? year : cal.get(Calendar.YEAR);
-		List<NWUCourse> courses = courseDao.getCoursesByYear(year);//Also by Status, add Status column, if empty process, otherwise skip. after insert update to inserted or whatever. modifiedDate?
+//		Calendar cal = Calendar.getInstance();
+//		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
+//		year = year != 0 ? year : cal.get(Calendar.YEAR);
+//		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);// Also by Status, add Status column, if empty
+		// process, otherwise skip. after insert update
+		// to inserted or whatever. modifiedDate?
+
+		// Get all existing course from Database for current year and no Sakai site id
+		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
+
 		if (!courses.isEmpty()) {
 
 			// Become admin in order to add sites
@@ -152,35 +164,31 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService);
 				
-				courses.forEach(course -> {
+				for (NWUCourse course : courses) {
+
+					NWULecturer lecturer = course.getLecturer();
+					if (lecturer == null) {
+						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
 
 					// Create Course Management data
 					courseManager.createCourseManagement(course);
 
 					// Create Course Sites
 					createEFundiCoureSite(course);
-				});
+				}
 
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
+
+				throw new JobExecutionException("updateNWUCourseManagement failed: " + e.getMessage());
 			} finally {
 //				securityService.popAdvisor(yesMan);
 				logoutFromSakai();
 			}
-		}		
+		}
 
-		// Insert all new courses from client that does not exist in DB
-//		if (courses.isEmpty()) {
-//			clientCourses.forEach(clientCourse -> {
-//				updateCourse(clientCourse);
-//			});
-//		} else {
-//			// Insert only new courses that has not already been inserted
-//			clientCourses.stream().filter(course -> !courses.contains(course)).forEach(clientCourse -> {
-//				updateCourse(clientCourse);
-//			});
-//		}
-		
 //		updateNWUeFundiCourseSites();
 	}
 
@@ -199,10 +207,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	public void updateNWUeFundiCourseSites() {
 
 		// Get all existing course from Database for current year and no Sakai site id
-		List<NWUCourse> courses = courseDao
-				.getCoursesByYear(Calendar.getInstance().get(Calendar.YEAR));
-		
-		//GET CM DATA
+		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
 
 		if (!courses.isEmpty()) {
 
@@ -217,15 +222,125 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 				loginToSakai();
 				securityService.pushAdvisor(yesMan);
+				
+				for (NWUCourse course : courses) {
 
-				courses.forEach(course -> {
+					NWULecturer lecturer = course.getLecturer();
+					if (lecturer == null) {
+						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+					
 					createEFundiCoureSite(course);
-				});
+				}
 
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			} finally {
 				securityService.popAdvisor(yesMan);
+				logoutFromSakai();
+			}
+		}
+	}
+
+	/**
+	 * Reads all student enrollment data for courses and add/remove to rosters
+	 * accordingly
+	 * 
+	 * @throws JobExecutionException
+	 * 
+	 */
+	public void updateNWUCourseEnrollments(Date previousFireTime) throws JobExecutionException {
+
+		Calendar cal = Calendar.getInstance();
+		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
+		year = year != 0 ? year : cal.get(Calendar.YEAR);
+		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);// Also by Status, add Status column, if empty
+																		// process, otherwise skip. after insert update
+																		// to inserted or whatever. modifiedDate?
+		if (!courses.isEmpty()) {
+
+			try {
+
+				loginToSakai();
+//				securityService.pushAdvisor(yesMan);
+
+				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
+						serverConfigurationService);
+				
+				for (NWUCourse course : courses) {
+
+					NWULecturer lecturer = course.getLecturer();
+					if (lecturer == null) {
+						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+
+					// Manage Course Enrollment
+					List<NWUStudentEnrollment> enrollmentList = enrollmentDao
+							.getEnrollmentsByCourseIdAndDate(course.getId(), previousFireTime);
+					if (enrollmentList != null && !enrollmentList.isEmpty()) {
+						courseManager.updateCourseEnrollment(course, enrollmentList);
+					}
+				}
+
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+
+				throw new JobExecutionException("updateNWUCourseEnrollments failed: " + e.getMessage());
+			} finally {
+//				securityService.popAdvisor(yesMan);
+				logoutFromSakai();
+			}
+		}
+	}
+
+	/**
+	 * Reads all Lecturer data for courses and add/remove accordingly
+	 * 
+	 * @throws JobExecutionException
+	 * 
+	 */
+	public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException {
+
+		Calendar cal = Calendar.getInstance();
+		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
+		year = year != 0 ? year : cal.get(Calendar.YEAR);
+		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);// Also by Status, add Status column, if empty
+																		// process, otherwise skip. after insert update
+																		// to inserted or whatever. modifiedDate?
+		if (!courses.isEmpty()) {
+
+			try {
+
+				loginToSakai();
+//				securityService.pushAdvisor(yesMan);
+
+				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
+						serverConfigurationService);
+				
+				for (NWUCourse course : courses) {
+
+					NWULecturer lecturer = course.getLecturer();
+					if (lecturer == null) {
+						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+
+					// Manage Course Lecturers
+					List<NWULecturer> lecturers = lecturerDao.getLecturersByCourseIdAndDate(course.getId(),
+							previousFireTime);
+					if (lecturers != null && !lecturers.isEmpty()) {
+						courseManager.updateCourseLecturers(course, lecturers);
+					}
+				}
+
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+
+				throw new JobExecutionException("updateNWUCourseLecturers failed: " + e.getMessage());
+			} finally {
+//				securityService.popAdvisor(yesMan);
 				logoutFromSakai();
 			}
 		}
@@ -244,7 +359,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		try {
 //			String siteId = siteName.replace(BLANK_SPACE, HYPHEN);
 			String siteId = idManager.createUuid();
-			if(!siteService.siteExists(siteId)) {
+			if (!siteService.siteExists(siteId)) {
 				String description = course.getCourseDescr();
 				newSite = siteService.addSite(siteId, "course");
 				newSite.setTitle(generateSiteName(course.getYear(), course.getCourseCode()));
@@ -254,7 +369,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				newSite.setJoinable(false);
 
 				addDefaultSakaiTools(newSite);
-				
+
 				String term = course.getTerm();
 				String termEid = course.getTerm();
 
@@ -262,8 +377,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				propEdit.addProperty("term", term);
 				propEdit.addProperty("term_eid", termEid);
 				siteService.save(newSite);
-				
-				//Create Academic session if not found
+
+				// Create Academic session if not found
 				try {
 					cmService.getAcademicSession(termEid);
 //					log.info("Found AcademicSession with id " + termEid);
@@ -606,7 +721,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setCmAdmin(CourseManagementAdministration cmAdmin) {
 		this.cmAdmin = cmAdmin;
-	}	
+	}
 
 	public IdManager getIdManager() {
 		return idManager;
@@ -614,17 +729,5 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setIdManager(IdManager idManager) {
 		this.idManager = idManager;
-	}
-
-	@Override
-	public void updateNWUCourseEnrollments() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void updateNWUCourseLecturers() {
-		// TODO Auto-generated method stub
-
 	}
 }

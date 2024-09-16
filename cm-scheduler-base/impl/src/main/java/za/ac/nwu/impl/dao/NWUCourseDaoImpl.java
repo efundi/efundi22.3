@@ -58,12 +58,12 @@ public class NWUCourseDaoImpl extends HibernateDaoSupport implements NWUCourseDa
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWUCourse> getCoursesByYear(int year) {
+	public List<NWUCourse> getAllCoursesByYearAndSiteId(int year) {
 
 		List<NWUCourse> courses = new ArrayList<>();
 
 		HibernateCallback<List<NWUCourse>> hcb = session -> {
-			Query q = session.getNamedQuery("FindCoursesByYear");
+			Query q = session.getNamedQuery("FindAllCoursesByYearAndSiteId");
 			q.setParameter("year", year);
 			return q.list();
 		};
@@ -72,6 +72,23 @@ public class NWUCourseDaoImpl extends HibernateDaoSupport implements NWUCourseDa
 
 		return courses;
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<NWUCourse> getAllCoursesByYear(int year) {
+
+		List<NWUCourse> courses = new ArrayList<>();
+
+		HibernateCallback<List<NWUCourse>> hcb = session -> {
+			Query q = session.getNamedQuery("FindAllCoursesByYear");
+			q.setParameter("year", year);
+			return q.list();
+		};
+
+		courses = getHibernateTemplate().execute(hcb);
+
+		return courses;
+	}	
 
 	@Override
 	public NWUCourse findCourseForParams(int year, String courseCode, String campusCode, String semCode) {

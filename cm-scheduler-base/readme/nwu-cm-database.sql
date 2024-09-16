@@ -1,65 +1,51 @@
+
 CREATE TABLE `cm_curriculum_course` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `campus` varchar(2) NOT NULL,
-  `year` int(11) NOT NULL,
-  `term` varchar(45) NOT NULL,
-  `course_code` varchar(45) NOT NULL,
+  `campus` varchar(8) NOT NULL,
+  `enrolment_year` int(4) NOT NULL,
+  `term` varchar(16) NOT NULL,
+  `course_code` varchar(12) NOT NULL,
   `course_descr` varchar(99) NOT NULL,
   `section_code` varchar(8) NOT NULL,
-  `section_descr` varchar(45) NOT NULL,
-  `instructor_number` int(11) NOT NULL,
-  `instructor_name` varchar(45) NOT NULL,
+  `section_descr` varchar(99) NULL,
+  `efundi_site_id` varchar(99) NULL,
   `audit_date_time` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQUE_index` (`campus`,`year`,`term`,`course_code`,`section_code`,`instructor_number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `cm_student_enrollment` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nwu_number` VARCHAR(45) NOT NULL ,
-  `student_status` VARCHAR(45) NOT NULL ,
-  `enrol_end_date` DATETIME NULL ,
-  `presentation_method` VARCHAR(45) NOT NULL ,
-  `mode_of_delivery` VARCHAR(45) NOT NULL ,
-  `faculty` VARCHAR(45) NOT NULL ,
-  `campus_code` VARCHAR(45) NOT NULL ,
-  `program_version_code` VARCHAR(45) NOT NULL ,
-  `registration_date` DATETIME NOT NULL ,
-  `enrollment_year` VARCHAR(45) NOT NULL ,
-  `year_level` VARCHAR(45) NOT NULL ,
-  `course` VARCHAR(45) NOT NULL ,
-  `practical_type` VARCHAR(45) NULL ,
-  `learning_type` VARCHAR(45) NULL ,
-  `is_practical` BIT(1) NULL ,
-  `is_research` BIT(1) NULL ,
-  `term` VARCHAR(45) NOT NULL ,
-  `term_start_date` DATE NOT NULL ,
-  `term_end_date` DATE NOT NULL ,
-  `section_code` VARCHAR(8) NOT NULL ,
-  `section_descr` VARCHAR(45) NOT NULL ,
-  `audit_date_time` DATETIME NOT NULL ,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQUE_index` (`nwu_number`,`program_version_code`,`enrollment_year`,`course`,`term`,`section_code`)
+  UNIQUE KEY `cm_unique_index` (`campus`,`enrolment_year`,`term`,`course_code`,`section_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `cm_course_section_instructor` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `course_code` VARCHAR(45) NOT NULL ,
-  `description` VARCHAR(45) NOT NULL ,
-  `status` VARCHAR(45) NOT NULL ,
-  `published_code` VARCHAR(45) NOT NULL ,
-  `term` VARCHAR(45) NOT NULL ,
-  `start_date` DATE NOT NULL ,
-  `end_date` DATE NOT NULL ,
-  `campus` VARCHAR(45) NOT NULL ,
-  `section_code` VARCHAR(8) NOT NULL ,
-  `section_descr` VARCHAR(45) NOT NULL ,
-  `section_start_date` DATE NOT NULL ,
-  `section_end_date` DATE NOT NULL ,
-  `nwu_number` VARCHAR(45) NOT NULL ,
-  `instructor_name` VARCHAR(45) NOT NULL ,
-  `max_students` INT NOT NULL ,
-  `audit_date_time` DATETIME NOT NULL ,
+  `course_id`int(11) NOT NULL,
+  `instructor_number` int(20) NOT NULL,
+  `instructor_name` varchar(160) NULL,
+  `audit_date_time` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQUE_index` (`course_code`,`term`,`campus`,`section_code`,`nwu_number`)
+  UNIQUE KEY `cm_inst_unique_index` (`course_id`),
+  CONSTRAINT `fk_inst_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `gb_lesson_plan` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_id`int(11) NOT NULL,
+  `class_test_number` int(3) NOT NULL,
+  `class_test_code` varchar(8) NOT NULL,
+  `class_test_name` varchar(40) NULL,
+  `class_test_max_score` DOUBLE(3,0) NOT NULL,
+  `audit_date_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gb_lp_unique_index` (`course_id`,`class_test_number`,`class_test_code`),
+  CONSTRAINT `fk_lp_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `cm_student_enrollment` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_id` int(11) NOT NULL,
+  `nwu_number` int(20) NOT NULL,
+  `student_status` VARCHAR(30) NOT NULL,
+  `faculty` VARCHAR(45) NOT NULL,
+  `audit_date_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gb_stud_unique_index` (`course_id`,`nwu_number`),
+  CONSTRAINT `fk_stud_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

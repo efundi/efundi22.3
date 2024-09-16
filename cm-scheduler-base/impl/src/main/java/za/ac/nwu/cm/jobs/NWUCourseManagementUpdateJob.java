@@ -21,7 +21,13 @@ public class NWUCourseManagementUpdateJob implements Job {
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		log.info("NWUCourseManagementUpdateJob - execute start");
-		getService().updateNWUCourseManagement();
+		
+		try {
+			getService().updateNWUCourseManagement();
+		} catch (JobExecutionException e) {
+			throw new JobExecutionException("NWUCourseManagementUpdateJob failed");
+		}
+		
 		log.info("NWUCourseManagementUpdateJob - execute finished");
 	}
 

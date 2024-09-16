@@ -8,6 +8,8 @@ import org.sakaiproject.component.api.ServerConfigurationService;
 
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.model.NWUCourse;
+import za.ac.nwu.api.model.NWULecturer;
+import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 @Slf4j
 public class Utility {
@@ -90,20 +92,20 @@ public class Utility {
 //    }
     public static Set<String> getLecturerUserNames(final NWUCourse course) {
         Set<String> lecturerUserNames = new HashSet<String>();
-        lecturerUserNames.add("" + course.getInstructorNumber());
+//        lecturerUserNames.add("" + course.getInstructorNumber());
         return lecturerUserNames;
     }
     
-//    /**
-//     * Returns a unique set of Student user names. (Examples: stud123, stud456)
-//     */
-//    public static Set<String> getStudentUserNames(final Module module) {
-//        Set<String> studentUserNames = new HashSet<String>();
-//        for (Student student : module.getLinkedStudents()) {
-//            studentUserNames.add(student.getUserName());
-//        }
-//        return studentUserNames;
-//    }
+    /**
+     * Returns a unique set of Student user names. (Examples: stud123, stud456)
+     */
+    public static Set<String> getStudentUserNames(final NWUCourse course) {
+        Set<String> studentUserNames = new HashSet<String>();
+        for (NWUStudentEnrollment student : course.getStudents()) {
+            studentUserNames.add("" + student.getNwuNumber());
+        }
+        return studentUserNames;
+    }
 //
 //    /**
 //     * Returns a unique set of Lecturers linked to a CourseSet.
@@ -119,32 +121,6 @@ public class Utility {
 //            }
 //        }
 //        return lecturerUserNames;
-//    }
-//
-//    /**
-//     * Returns a set of all lecturers linked to the modules.
-//     */
-//    public static Set<Lecturer> getAllLecturers(final Set<Module> modules) {
-//        Set<Lecturer> lecturers = new HashSet<Lecturer>();
-//        for (Module module : modules) {
-//            for (Lecturer lecturer : module.getLinkedLecturers()) {
-//                lecturers.add(lecturer);
-//            }
-//        }
-//        return lecturers;
-//    }
-//
-//    /**
-//     * Returns a set of all students linked to the modules.
-//     */
-//    public static Set<Student> getAllStudents(final Set<Module> modules) {
-//        Set<Student> students = new HashSet<Student>();
-//        for (Module module : modules) {
-//            for (Student student : module.getLinkedStudents()) {
-//                students.add(student);
-//            }
-//        }
-//        return students;
 //    }
 
     public static LDAPRetrieval getLDAPRetrieval(

@@ -1,6 +1,7 @@
 package za.ac.nwu.impl.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -53,30 +54,23 @@ public class NWUCourseLecturerDaoImpl extends HibernateDaoSupport implements NWU
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<NWULecturer> getLecturersByYearOrderBySakaiSiteId(int year) {
+	public List<NWULecturer> getLecturersByCourseIdAndDate(Long courseId, Date date) {
 
 		List<NWULecturer> lecturers = new ArrayList<>();
 
 		HibernateCallback<List<NWULecturer>> hcb = session -> {
-			Query q = session.getNamedQuery("FindLecturersByYearOrderBySakaiSiteId");
-			q.setParameter("year", year);
-			return q.list();
-		};
 
-		lecturers = getHibernateTemplate().execute(hcb);
+			Query q = null;
+			if(date == null) {
+				q = session.createQuery("SELECT l FROM NWULecturer l WHERE l.courseId = :courseId");
+				q.setParameter("courseId", courseId);
+			} else {
+				q = session.createQuery("SELECT l FROM NWULecturer l WHERE l.courseId = :courseId AND l.auditDateTime > :date ");
 
-		return lecturers;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<NWULecturer> getLecturersByYear(int year) {
-
-		List<NWULecturer> lecturers = new ArrayList<>();
-
-		HibernateCallback<List<NWULecturer>> hcb = session -> {
-			Query q = session.getNamedQuery("FindLecturersByYear");
-			q.setParameter("year", year);
+				q.setParameter("courseId", courseId);
+				q.setParameter("date", date.toInstant());
+			}
+			
 			return q.list();
 		};
 

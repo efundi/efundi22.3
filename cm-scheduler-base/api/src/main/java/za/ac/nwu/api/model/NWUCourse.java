@@ -1,12 +1,19 @@
 package za.ac.nwu.api.model;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
@@ -23,11 +30,12 @@ import lombok.ToString;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Table(name = "cm_curriculum_course")
 @Data
-@ToString
+@ToString(exclude = "students")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 @NamedQueries({
-	@NamedQuery(name = "FindCoursesByYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year AND (c.efundiSiteId is null OR c.efundiSiteId = '')") })
+	@NamedQuery(name = "FindAllCoursesByYearAndSiteId", query = "SELECT c FROM NWUCourse c WHERE c.year = :year AND (c.efundiSiteId is null OR c.efundiSiteId = '')"),
+	@NamedQuery(name = "FindAllCoursesByYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year")})
 
 public class NWUCourse {
 
@@ -37,19 +45,19 @@ public class NWUCourse {
 	private Long id;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "campus", length = 2, nullable = false)
+	@Column(name = "campus", length = 8, nullable = false)
 	private String campus;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "year", nullable = false)
+	@Column(name = "enrolment_year", nullable = false)
 	private Integer year;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "term", length = 45, nullable = false)
+	@Column(name = "term", length = 16, nullable = false)
 	private String term;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "course_code", length = 45, nullable = false)
+	@Column(name = "course_code", length = 12, nullable = false)
 	private String courseCode;
 
 	@Column(name = "course_descr", length = 99, nullable = false)
@@ -59,28 +67,30 @@ public class NWUCourse {
 	@Column(name = "section_code", length = 8, nullable = false)
 	private String sectionCode;
 
-	@Column(name = "section_descr", length = 45, nullable = false)
+	@Column(name = "section_descr", length = 99, nullable = true)
 	private String sectionDescr;
 
 	@Column(name = "efundi_site_id", length = 99, nullable = true)
 	private String efundiSiteId;
 
-	@EqualsAndHashCode.Include
-	@Column(name = "instructor_number", nullable = false)
-	private Integer instructorNumber;
-
-	@Column(name = "instructor_name", length = 45, nullable = false)
-	private String instructorName;
-
     @Type(type = "org.hibernate.type.InstantType")
-	@Column(name = "audit_date_time", nullable = true)
+	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
     
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(foreignKey = @ForeignKey(name = "fk_post"))
+    
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id") 
+    private NWULecturer lecturer;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="course")  
+    private List<NWUStudentEnrollment> students = new ArrayList<>();
+        
 	public NWUCourse() {
 	}
 
-	public NWUCourse(String campus, Integer year, String term, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, Integer instructorNumber,
-			String instructorName, Instant auditDateTime) {
+	public NWUCourse(String campus, Integer year, String term, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, Instant auditDateTime) {
 		this.campus = campus;
 		this.year = year;
 		this.term = term;
@@ -89,8 +99,6 @@ public class NWUCourse {
 		this.sectionCode = sectionCode;
 		this.sectionDescr = sectionDescr;
 		this.efundiSiteId = efundiSiteId;
-		this.instructorNumber = instructorNumber;
-		this.instructorName = instructorName;
 		this.auditDateTime = auditDateTime;
 	}
 }

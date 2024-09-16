@@ -1,8 +1,9 @@
 package za.ac.nwu.api.dao;
 
+import java.util.Date;
 import java.util.List;
 
-import za.ac.nwu.api.model.NWUEnrollment;
+import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 /**
  * 
@@ -13,16 +14,14 @@ import za.ac.nwu.api.model.NWUEnrollment;
  */
 public interface NWUCourseEnrollmentDao {
 
-	public NWUEnrollment updateEnrollment(NWUEnrollment enrollment);
+	public NWUStudentEnrollment updateEnrollment(NWUStudentEnrollment enrollment);
 
-	public List<NWUEnrollment> getEnrollments();
+	public List<NWUStudentEnrollment> getEnrollments();
 
-	public List<NWUEnrollment> getEnrollmentsByYear(int year);
-
-	public NWUEnrollment getEnrollmentById(Long id);
+	public NWUStudentEnrollment getEnrollmentById(Long id);
 
 	public boolean deleteEnrollment(Long id);
 
-	public List<NWUEnrollment> getEnrollmentsByYearOrderBySakaiSiteId(int year);
+	public List<NWUStudentEnrollment> getEnrollmentsByCourseIdAndDate(Long courseId, Date date);
 
 }

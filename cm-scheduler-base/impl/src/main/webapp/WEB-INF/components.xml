@@ -21,6 +21,32 @@
 		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
 	</bean>
 	
+	<!-- NWUCourseEnrollmentUpdateJob -->
+	<bean id="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob" class="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob">
+		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
+        <property name="triggerEventManager" ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager"/>
+	</bean>
+	<bean
+		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob"
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper" init-method="init">
+		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob" />
+		<property name="jobName" value="NWU Course Enrollment Update Job" />
+		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+	</bean>
+	
+	<!-- NWUCourseLecturerUpdateJob -->
+	<bean id="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob" class="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob">
+		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
+        <property name="triggerEventManager" ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager"/>
+	</bean>
+	<bean
+		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob"
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper" init-method="init">
+		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob" />
+		<property name="jobName" value="NWU Course Lecturer Update Job" />
+		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+	</bean>
+	
     <bean id="za.ac.nwu.api.dao.NWUCourseDao"
           class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
@@ -76,7 +102,7 @@
         <property name="annotatedClasses">
             <list>
                 <value>za.ac.nwu.api.model.NWUCourse</value>
-                <value>za.ac.nwu.api.model.NWUEnrollment</value>
+                <value>za.ac.nwu.api.model.NWUStudentEnrollment</value>
                 <value>za.ac.nwu.api.model.NWULecturer</value>
             </list>
         </property>

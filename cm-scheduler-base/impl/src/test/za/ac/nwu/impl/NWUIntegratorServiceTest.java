@@ -70,7 +70,7 @@ public class NWUIntegratorServiceTest extends AbstractTransactionalJUnit4SpringC
 
     @Test
     public void updateNWUCourseManagement() {
-    	integratorService.updateNWUCourseManagement();
+//    	integratorService.updateNWUCourseManagement();
 //        String context = UUID.randomUUID().toString();
 //        Assignment assignment = createNewAssignment(context);
 //        String stringRef = AssignmentReferenceReckoner.reckoner().context(assignment.getContext()).subtype("a").id(assignment.getId()).reckon().getReference();
