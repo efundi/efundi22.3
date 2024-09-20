@@ -52,8 +52,8 @@ public class NWUStudentEnrollment {
 	private Instant auditDateTime;
 
     @ManyToOne
-    @JoinColumn(name = "id", updatable = false, insertable = false)
-    private NWUCourse course;
+    @JoinColumn(name = "course_id", updatable = false, insertable = false)
+    @ToString.Exclude private NWUCourse course;
 
 	public NWUStudentEnrollment() {
 	}

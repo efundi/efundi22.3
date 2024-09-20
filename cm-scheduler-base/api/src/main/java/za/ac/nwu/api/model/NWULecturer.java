@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -47,8 +48,13 @@ public class NWULecturer {
 	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
     
-    @OneToOne(mappedBy = "lecturer")
-    private NWUCourse course;
+//    @OneToOne
+//    @JoinColumn(name = "course_id", updatable = false, insertable = false)
+//    @MapsId
+    
+    @OneToOne
+    @JoinColumn(name="course_id", updatable = false, insertable = false)
+    @ToString.Exclude private NWUCourse course;
     
 	public NWULecturer() {
 	}

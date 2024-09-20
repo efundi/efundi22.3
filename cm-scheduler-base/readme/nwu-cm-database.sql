@@ -1,4 +1,3 @@
-
 CREATE TABLE `cm_curriculum_course` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `campus` varchar(8) NOT NULL,
@@ -10,6 +9,8 @@ CREATE TABLE `cm_curriculum_course` (
   `section_descr` varchar(99) NULL,
   `efundi_site_id` varchar(99) NULL,
   `audit_date_time` datetime NOT NULL,
+  `term_start_date` date NOT NULL,
+  `term_end_date` date NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cm_unique_index` (`campus`,`enrolment_year`,`term`,`course_code`,`section_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -49,3 +50,4 @@ CREATE TABLE `cm_student_enrollment` (
   UNIQUE KEY `gb_stud_unique_index` (`course_id`,`nwu_number`),
   CONSTRAINT `fk_stud_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

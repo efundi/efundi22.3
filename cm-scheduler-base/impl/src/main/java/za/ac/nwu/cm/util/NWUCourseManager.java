@@ -16,12 +16,19 @@ import org.sakaiproject.coursemanagement.api.CourseOffering;
 import org.sakaiproject.coursemanagement.api.EnrollmentSet;
 import org.sakaiproject.coursemanagement.api.SectionCategory;
 import org.sakaiproject.coursemanagement.api.exception.IdNotFoundException;
+import org.sakaiproject.entity.api.ResourcePropertiesEdit;
+import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.exception.PermissionException;
+import org.sakaiproject.site.api.Site;
+import org.sakaiproject.site.api.SiteService;
+import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
+import org.sakaiproject.user.api.UserNotDefinedException;
 
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.model.NWUCourse;
-import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.model.NWULecturer;
+import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 /**
  * This Manager creates and removes Course Management data in eFundi data.
@@ -38,7 +45,9 @@ public class NWUCourseManager {
 
 	private UserDirectoryService userDirectoryService;
 
-	private ServerConfigurationService serverConfigurationService;
+	private ServerConfigurationService serverConfigurationService;	
+
+	private SiteService siteService;
 
 	private String status = null;
 	private String enrollmentSetCategory = null;
@@ -59,12 +68,13 @@ public class NWUCourseManager {
 
 	public NWUCourseManager(final CourseManagementAdministration cmAdmin, final CourseManagementService cmService,
 			final UserDirectoryService userDirectoryService,
-			final ServerConfigurationService serverConfigurationService) {
+			final ServerConfigurationService serverConfigurationService, final SiteService siteService) {
 
 		this.cmAdmin = cmAdmin;
 		this.cmService = cmService;
 		this.userDirectoryService = userDirectoryService;
 		this.serverConfigurationService = serverConfigurationService;
+		this.siteService = siteService;
 
 		this.status = serverConfigurationService.getString("nwu.cm.CourseOffering.status", "Active");
 		this.enrollmentSetCategory = serverConfigurationService.getString("nwu.cm.EnrollmentSet.category", "category");
@@ -120,10 +130,6 @@ public class NWUCourseManager {
                 }
             }
         }
-		// Update CM Link records
-//        dataManager.updateInsertedDataStatus(year);
-		// course.setStatus, return so that it can be committed in method that called
-		// this
 	}
 
 	/**
@@ -262,10 +268,6 @@ public class NWUCourseManager {
 		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);
 
 		if (!cmService.isEnrollmentSetDefined(enrollmentSetReference)) {
-//            cmAdmin.createEnrollmentSet(enrollmentSetReference,
-//            		enrollmentSetReference, enrollmentSetReference,
-//                enrollmentSetCategory, enrollmentSetCredits, courseOfferingReference,
-//                Utility.getLecturerUserNames(course));            
 
 			Set<String> lecturerUserNames = new HashSet<String>();
 			lecturerUserNames.add("" + course.getLecturer().getInstructorNumber());
@@ -295,7 +297,10 @@ public class NWUCourseManager {
 	public void updateCourseEnrollment(NWUCourse course, List<NWUStudentEnrollment> enrollmentList) {
 
 		String courseOfferingReference = Utility.getCourseOfferingReference(course);
-		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);
+		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);		
+
+        log.info("updateCourseEnrollment.courseOfferingReference " + courseOfferingReference);
+        log.info("updateCourseEnrollment.enrollmentSetReference " + enrollmentSetReference);
 
 		Set<RosterUser> students = new HashSet<RosterUser>();
 		for (Iterator iterator = enrollmentList.iterator(); iterator.hasNext();) {
@@ -351,23 +356,60 @@ public class NWUCourseManager {
 	public void updateCourseLecturers(NWUCourse course, List<NWULecturer> lecturers) {
 		
 		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);
+
+		log.info("updateCourseLecturers.enrollmentSetReference " + enrollmentSetReference);
 		
 		if (cmService.isEnrollmentSetDefined(enrollmentSetReference)) {
             EnrollmentSet enrollmentSet = cmService.getEnrollmentSet(enrollmentSetReference);
             Set<String> instructors = enrollmentSet.getOfficialInstructors();
-            
+
+    		log.info("updateCourseLecturers.getOfficialInstructors " + instructors);
+    		
 //            Set<String> lecturerUserNames = new HashSet<String>();
 			NWULecturer lecturer = course.getLecturer();
 			if (lecturer != null && !instructors.contains("" + lecturer.getInstructorNumber())) {
-				instructors.clear();
-				instructors.add("" + lecturer.getInstructorNumber());				
+				
+				List<String> oldInstructors = new ArrayList<String>(instructors); 
+				try {
+		    		log.info("updateCourseLecturers.siteService.getSite " + course.getEfundiSiteId());
+		    		
+					Site site = siteService.getSite(course.getEfundiSiteId());
+		    		
+					instructors.clear();
+					instructors.add("" + lecturer.getInstructorNumber());				
 
-	            enrollmentSet.setOfficialInstructors(instructors);
-	            cmAdmin.updateEnrollmentSet(enrollmentSet);
-	            log.info("Updated Lecturer from EnrollmentSet: "
-	                    + lecturer.getInstructorNumber()
-	                    + " - "
-	                    + enrollmentSetReference);            
+		            enrollmentSet.setOfficialInstructors(instructors);
+		            cmAdmin.updateEnrollmentSet(enrollmentSet);
+		            log.info("Updated Lecturer from EnrollmentSet: "
+		                    + lecturer.getInstructorNumber()
+		                    + " - "
+		                    + enrollmentSetReference);
+					
+		            // add new lecturer user as the maintainer
+		            site.addMember("" + course.getLecturer().getInstructorNumber(), site.getMaintainRole(), true, false);
+		    		log.info("updateCourseLecturers.site.addMember " + course.getLecturer().getInstructorNumber());
+					
+		            // remove old instructor
+		            site.removeMember(oldInstructors.get(0));
+		            log.info("updateCourseLecturers.site.removeMember " + oldInstructors.get(0));
+		            
+					User user = userDirectoryService.getUserByEid("" + course.getLecturer().getInstructorNumber());
+
+					ResourcePropertiesEdit propEdit = site.getPropertiesEdit();
+					propEdit.addProperty(Site.PROP_SITE_CONTACT_NAME, user.getDisplayName());
+					propEdit.addProperty(Site.PROP_SITE_CONTACT_EMAIL, user.getEmail());
+					
+		            log.info("updateCourseLecturers.userDirectoryService.getUserByEid " + user.getEid());
+
+					siteService.save(site);					
+					
+				} catch (IdUnusedException e1) {
+                    log.error("Could not find Site for Id: " + course.getEfundiSiteId());
+				} catch (UserNotDefinedException e) {
+                    log.error("Could not find User for Id: " + course.getLecturer().getInstructorNumber());
+				} catch (PermissionException e) {
+                    log.error("Could save Site with Id: " + course.getEfundiSiteId());
+				}
 	            
 	            if (serverConfigurationService.getBoolean("nwu.cm.users.create", false)) {
 	                LDAPRetrieval ldap = Utility.getLDAPRetrieval(serverConfigurationService);

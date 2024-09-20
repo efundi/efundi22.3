@@ -1,6 +1,7 @@
 package za.ac.nwu.api.model;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -30,12 +30,14 @@ import lombok.ToString;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Table(name = "cm_curriculum_course")
 @Data
-@ToString(exclude = "students")
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 @NamedQueries({
 	@NamedQuery(name = "FindAllCoursesByYearAndSiteId", query = "SELECT c FROM NWUCourse c WHERE c.year = :year AND (c.efundiSiteId is null OR c.efundiSiteId = '')"),
-	@NamedQuery(name = "FindAllCoursesByYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year")})
+	@NamedQuery(name = "FindAllCoursesByYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year"),
+	@NamedQuery(name = "FindAllCoursesWithNoSiteId", query = "SELECT c FROM NWUCourse c WHERE c.efundiSiteId is null OR c.efundiSiteId = '' "),
+	@NamedQuery(name = "FindAllCoursesWithSiteId", query = "SELECT c FROM NWUCourse c WHERE c.efundiSiteId is not null AND c.efundiSiteId != '' ")})
 
 public class NWUCourse {
 
@@ -55,6 +57,12 @@ public class NWUCourse {
 	@EqualsAndHashCode.Include
 	@Column(name = "term", length = 16, nullable = false)
 	private String term;
+	
+	@Column(name = "term_start_date", nullable = false)
+	private LocalDate termStartDate;
+	
+	@Column(name = "term_end_date", nullable = true)
+	private LocalDate termEndDate;
 
 	@EqualsAndHashCode.Include
 	@Column(name = "course_code", length = 12, nullable = false)
@@ -77,23 +85,24 @@ public class NWUCourse {
 	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
     
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(foreignKey = @ForeignKey(name = "fk_post"))
+//    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL)
+//    @PrimaryKeyJoinColumn
     
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id") 
-    private NWULecturer lecturer;
+    @OneToOne(mappedBy = "course")
+    @ToString.Exclude private NWULecturer lecturer;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="course")  
-    private List<NWUStudentEnrollment> students = new ArrayList<>();
+    @ToString.Exclude private List<NWUStudentEnrollment> students = new ArrayList<>();
         
 	public NWUCourse() {
 	}
 
-	public NWUCourse(String campus, Integer year, String term, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, Instant auditDateTime) {
+	public NWUCourse(String campus, Integer year, String term, LocalDate termStartDate, LocalDate termEndDate, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, Instant auditDateTime) {
 		this.campus = campus;
 		this.year = year;
 		this.term = term;
+		this.termStartDate = termStartDate;
+		this.termEndDate = termEndDate;
 		this.courseCode = courseCode;
 		this.courseDescr = courseDescr;
 		this.sectionCode = sectionCode;

@@ -7,14 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobExecutionException;
+import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.SecurityAdvisor;
 import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.coursemanagement.api.CourseManagementAdministration;
 import org.sakaiproject.coursemanagement.api.CourseManagementService;
-import org.sakaiproject.coursemanagement.api.exception.IdNotFoundException;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUsedException;
@@ -44,6 +45,7 @@ import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
 import za.ac.nwu.cm.util.NWUCourseManager;
+import za.ac.nwu.cm.util.Utility;
 
 /**
  * NWUServiceImpl - NWUService implementation
@@ -145,9 +147,17 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		// to inserted or whatever. modifiedDate?
 
 		// Get all existing course from Database for current year and no Sakai site id
-		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
+//		List<NWUCourse> courses = courseDao.FindAllCoursesWithNoSiteId(Calendar.getInstance().get(Calendar.YEAR));
 
+
+		// Get all CM data with no Sakai site id
+		List<NWUCourse> courses = courseDao.getAllCoursesWithNoSiteId();
+		if (courses.isEmpty()) {
+			log.info("No courses found ");
+		}
 		if (!courses.isEmpty()) {
+			
+			printCoursesInfo(courses);
 
 			// Become admin in order to add sites
 //			SecurityAdvisor yesMan = new SecurityAdvisor() {
@@ -159,11 +169,12 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			try {
 
 				loginToSakai();
+
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
-						serverConfigurationService);
-				
+						serverConfigurationService, siteService);
+
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
@@ -188,18 +199,27 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				logoutFromSakai();
 			}
 		}
-
-//		updateNWUeFundiCourseSites();
 	}
 
-//	private void updateCourse(NWUCourse clientCourse) {
-//		try {
-//			courseDao.updateCourse(clientCourse);
-//			log.info("Course updated: " + clientCourse);
-//		} catch (Exception e) {
-//			log.error("updateCourse Exception" + e.getMessage(), e);
-//		}
-//	}
+	private void printCoursesInfo(List<NWUCourse> courses) {
+
+		for (NWUCourse course : courses) {
+
+			log.info("NWUCourse Info ============================================================ ");
+			log.info("NWUCourse: " + course);
+			NWULecturer lecturer = course.getLecturer();
+			log.info("NWULecturer: " + lecturer);
+			List<NWUStudentEnrollment> students = course.getStudents();
+
+			if (students.isEmpty()) {
+				log.info("No students found ");
+			} else {
+				for (NWUStudentEnrollment student : students) {
+					log.info("NWUStudentEnrollment: " + student);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Updating NWU Course Sites from CM data
@@ -207,8 +227,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	public void updateNWUeFundiCourseSites() {
 
 		// Get all existing course from Database for current year and no Sakai site id
-		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
-
+//		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
+		
+		// Get all CM data with no Sakai site id
+		List<NWUCourse> courses = courseDao.getAllCoursesWithNoSiteId();
 		if (!courses.isEmpty()) {
 
 			// Become admin in order to add sites
@@ -222,7 +244,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 				loginToSakai();
 				securityService.pushAdvisor(yesMan);
-				
+
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
@@ -230,7 +252,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						log.error("Course must have an Instuctor: " + course);
 						continue;
 					}
-					
+
 					createEFundiCoureSite(course);
 				}
 
@@ -252,13 +274,21 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	 */
 	public void updateNWUCourseEnrollments(Date previousFireTime) throws JobExecutionException {
 
-		Calendar cal = Calendar.getInstance();
-		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
-		year = year != 0 ? year : cal.get(Calendar.YEAR);
-		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);// Also by Status, add Status column, if empty
-																		// process, otherwise skip. after insert update
-																		// to inserted or whatever. modifiedDate?
+//		Calendar cal = Calendar.getInstance();
+//		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
+//		year = year != 0 ? year : cal.get(Calendar.YEAR);
+//		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);
+		
+		// Get all CM data with Sakai site id
+		List<NWUCourse> courses = courseDao.getAllCoursesWithSiteId();
+
+		if (courses.isEmpty()) {
+			log.info("No courses found ");
+		}
 		if (!courses.isEmpty()) {
+			
+			printCoursesInfo(courses);
+			log.info("Job PreviousFireTime: " + previousFireTime);
 
 			try {
 
@@ -266,8 +296,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
-						serverConfigurationService);
-				
+						serverConfigurationService, siteService);
+
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
@@ -279,8 +309,11 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					// Manage Course Enrollment
 					List<NWUStudentEnrollment> enrollmentList = enrollmentDao
 							.getEnrollmentsByCourseIdAndDate(course.getId(), previousFireTime);
+					
 					if (enrollmentList != null && !enrollmentList.isEmpty()) {
 						courseManager.updateCourseEnrollment(course, enrollmentList);
+					} else {
+						log.info("No students found ");
 					}
 				}
 
@@ -303,13 +336,21 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	 */
 	public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException {
 
-		Calendar cal = Calendar.getInstance();
-		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
-		year = year != 0 ? year : cal.get(Calendar.YEAR);
-		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);// Also by Status, add Status column, if empty
-																		// process, otherwise skip. after insert update
-																		// to inserted or whatever. modifiedDate?
+//		Calendar cal = Calendar.getInstance();
+//		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
+//		year = year != 0 ? year : cal.get(Calendar.YEAR);
+//		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);
+
+		// Get all CM data with Sakai site id
+		List<NWUCourse> courses = courseDao.getAllCoursesWithSiteId();
+		
+		if (courses.isEmpty()) {
+			log.info("No courses found ");
+		}
 		if (!courses.isEmpty()) {
+			
+			printCoursesInfo(courses);
+			log.info("Job PreviousFireTime: " + previousFireTime);
 
 			try {
 
@@ -317,8 +358,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
-						serverConfigurationService);
-				
+						serverConfigurationService, siteService);
+
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
@@ -332,6 +373,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 							previousFireTime);
 					if (lecturers != null && !lecturers.isEmpty()) {
 						courseManager.updateCourseLecturers(course, lecturers);
+					} else {
+						log.info("No lecturers found ");
 					}
 				}
 
@@ -357,43 +400,46 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		log.info("NWU - Creating unpublished eFundi Course Site");
 		Site newSite = null;
 		try {
-//			String siteId = siteName.replace(BLANK_SPACE, HYPHEN);
 			String siteId = idManager.createUuid();
-			if (!siteService.siteExists(siteId)) {
-				String description = course.getCourseDescr();
-				newSite = siteService.addSite(siteId, "course");
-				newSite.setTitle(generateSiteName(course.getYear(), course.getCourseCode()));
-				newSite.setDescription(description);
-				newSite.setShortDescription(description);
-				newSite.setPublished(false);
-				newSite.setJoinable(false);
+			String description = course.getCourseDescr();
+			newSite = siteService.addSite(siteId, "course");
+			newSite.setTitle(generateSiteName(course));
+			newSite.setDescription(description);
+			newSite.setShortDescription(description);
+			newSite.setPublished(false);
+			newSite.setJoinable(false);
 
-				addDefaultSakaiTools(newSite);
+			addDefaultSakaiTools(newSite);
 
-				String term = course.getTerm();
-				String termEid = course.getTerm();
+			String term = course.getTerm();
+			String termEid = course.getTerm();
 
-				ResourcePropertiesEdit propEdit = newSite.getPropertiesEdit();
-				propEdit.addProperty("term", term);
-				propEdit.addProperty("term_eid", termEid);
-				siteService.save(newSite);
+			ResourcePropertiesEdit propEdit = newSite.getPropertiesEdit();
+			propEdit.addProperty(Site.PROP_SITE_TERM, term);
+			propEdit.addProperty(Site.PROP_SITE_TERM_EID, termEid);
 
-				// Create Academic session if not found
-				try {
-					cmService.getAcademicSession(termEid);
-//					log.info("Found AcademicSession with id " + termEid);
-				} catch (IdNotFoundException e) {
-//					cmAdmin.createAcademicSession(termEid, term, generateTermDescription(course), null, null);
-//					log.info("Created AcademicSession with id " + termEid);					
+			// add lecturer user as the maintainer
+			newSite.addMember("" + course.getLecturer().getInstructorNumber(), newSite.getMaintainRole(), true, false);
 
-					log.info("IdNotFoundException AcademicSession with id " + termEid);
-				}
+			User user = userDirectoryService.getUserByEid("" + course.getLecturer().getInstructorNumber());
 
-				course.setEfundiSiteId(newSite.getId());
-				courseDao.updateCourse(course);
+			propEdit.addProperty(Site.PROP_SITE_CONTACT_NAME, user.getDisplayName());
+			propEdit.addProperty(Site.PROP_SITE_CONTACT_EMAIL, user.getEmail());
 
-				log.info("NWU - New Course site created: " + siteId);
-			}
+			siteService.save(newSite);
+
+			String realm = siteService.siteReference(siteId);
+
+			AuthzGroup realmEdit = authzGroupService.getAuthzGroup(realm);
+			String courseOfferingReference = Utility.getCourseOfferingReference(course);
+			realmEdit.setProviderGroupId(courseOfferingReference);
+			authzGroupService.save(realmEdit);
+			siteService.save(newSite);
+
+			course.setEfundiSiteId(newSite.getId());
+			courseDao.updateCourse(course);
+
+			log.info("NWU - New Course site created: " + siteId);
 
 		} catch (IdInvalidException | PermissionException e) {
 			log.error("createSakaiSite: " + e.getMessage(), e);
@@ -465,8 +511,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				String password = serverConfigurationService.getString("integration.admin.password", "adminNWU123!@#");
 				String email = serverConfigurationService.getString("integration.admin.email", "nwuAdmin@nwu.ac.za");
 
-				// String id, String eid, String firstName, String lastName, String email,
-				// String pw, String type, ResourceProperties properties
 				user = userDirectoryService.addUser(userId, userId, userId, userId, email, password, "registered",
 						null);
 
@@ -489,141 +533,20 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	}
 
 	/**
-	 * Helper method to create Sakai course site term value
-	 * 
-	 * @param course
-	 * @return
-	 */
-//	private String generateTerm(NWUCourse course) {
-//		StringBuilder term = new StringBuilder();
-//		term.append(SEMESTER_SEM).append(BLANK_SPACE).append(course.getSemCode()).append(BLANK_SPACE);
-//		int yearLastTwoDigits = course.getYear() % 100;
-//		term.append("" + (yearLastTwoDigits - 1)).append("/" + yearLastTwoDigits);
-//		return term.toString();
-//	}
-//
-//	/**
-//	 * Helper method to create Sakai course site term_eid value
-//	 * 
-//	 * @param course
-//	 * @return
-//	 */
-//	private String generateTermEid(NWUCourse course) {
-//		StringBuilder termEid = new StringBuilder();
-//		termEid.append(SEMESTER_S).append(course.getSemCode()).append(HYPHEN);
-//		int yearLastTwoDigits = course.getYear() % 100;
-//		termEid.append("" + (yearLastTwoDigits - 1)).append("" + yearLastTwoDigits);
-//		return termEid.toString();
-//	}
-//	
-//	/**
-//	 * Helper method to create Sakai course site term description value
-//	 * 
-//	 * @param course
-//	 * @return
-//	 */
-//	private String generateTermDescription(NWUCourse course) {
-//		StringBuilder term = new StringBuilder();
-//		term.append(course.getSemester()).append(BLANK_SPACE);
-//		int yearLastTwoDigits = course.getYear() % 100;
-//		term.append("" + (yearLastTwoDigits - 1)).append("/" + yearLastTwoDigits);
-//		return term.toString();
-//	}
-
-	/**
-	 * Helper method to create Sakai course site description value
-	 * 
-	 * @param course
-	 * @return
-	 */
-//	private String generateCourseDescription(NWUCourse course) {
-//		StringBuilder description = new StringBuilder();
-//		description.append(course.getCourseCode()).append(BLANK_SPACE);
-//		description.append(course.getCourse()).append(BLANK_SPACE);
-//		description.append(course.getCampus()).append(BLANK_SPACE);
-//		description.append(course.getSemester()).append(BLANK_SPACE);
-//		description.append("" + course.getYear());
-//		return description.toString();
-//	}
-//
-//	/**
-//	 * Helped method to get Sakai site Id
-//	 * 
-//	 * @param enrollment
-//	 * @return
-//	 */
-//	private String generateSiteNameId(NWUEnrollment enrollment) {
-//		return generateSiteName(enrollment).replace(BLANK_SPACE, HYPHEN);
-//	}
-//
-//	/**
-//	 * Helped method to get Sakai site Id
-//	 * 
-//	 * @param lecturer
-//	 * @return
-//	 */
-//	private String generateSiteNameId(NWULecturer lecturer) {
-//		return generateSiteName(lecturer).replace(BLANK_SPACE, HYPHEN);
-//	}
-
-//	/**
-//	 * Helper method to create Sakai course site title value
-//	 * 
-//	 * @param enrollment
-//	 * @return
-//	 */
-//	private String generateSiteName(NWUEnrollment enrollment) {
-//		return generateSiteName(enrollment.getYear(), enrollment.getCourseCode(), enrollment.getCampusCode(),
-//				enrollment.getSemCode());
-//	}
-//
-//	/**
-//	 * Helper method to create Sakai course site title value
-//	 * 
-//	 * @param lecturer
-//	 * @return
-//	 */
-//	private String generateSiteName(NWULecturer lecturer) {
-//		return generateSiteName(lecturer.getYear(), lecturer.getCourse(), lecturer.getOfferingType(),
-//				lecturer.getSemester());
-//	}
-
-	/**
 	 * Helper method to create Sakai course site title value
 	 * 
-	 * @param year
-	 * @param courseCode
-	 * @param campusCode
-	 * @param semCode
-	 * @return
+	 * @param course
+	 * @return siteName
 	 */
-//	private String generateSiteName(int year, String courseCode, String campusCode, String semCode) {
-//		StringBuilder siteid = new StringBuilder();
-//		try {
-//			String courseSplitArray[] = courseCode.split("(?<=\\D)(?=\\d)");
-//			String campusCodeVal = campusCode.startsWith("0") ? campusCode.substring(1) : campusCode;
-//			int yearLastTwoDigits = year % 100;
-//
-//			siteid.append(courseSplitArray[0]).append(BLANK_SPACE).append(courseSplitArray[1]).append(BLANK_SPACE);
-//			siteid.append(campusCodeVal).append(BLANK_SPACE);
-//			siteid.append(SEMESTER_S).append(semCode).append(HYPHEN);
-//			siteid.append("" + (yearLastTwoDigits - 1)).append("" + yearLastTwoDigits);
-//		} catch (Exception e) {
-//			log.warn("Could not create siteId generateSiteId() for : year:" + year + ", courseCode: "
-//					+ courseCode + ", campusCode: " + campusCode + ", semCode: " + semCode);
-//			return null;
-//		}
-//		return siteid.toString();
-//	}
-	private String generateSiteName(int year, String courseCode) {
-		StringBuilder siteId = new StringBuilder();
+	private String generateSiteName(NWUCourse course) {
+		StringBuilder siteName = new StringBuilder();
 		try {
-			siteId.append(courseCode).append(HYPHEN).append("" + year);
+			siteName.append(course.getCourseCode()).append(HYPHEN).append(course.getTermStartDate().getYear());
 		} catch (Exception e) {
-			log.warn("Could not create siteId generateSiteId() for : year:" + year + ", courseCode: " + courseCode);
+			log.warn("Could not create site name generateSiteName() for course: " + course);
 			return null;
 		}
-		return siteId.toString();
+		return siteName.toString();
 	}
 
 	public NWUCourseDao getCourseDao() {

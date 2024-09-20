@@ -8,7 +8,6 @@ import org.sakaiproject.component.api.ServerConfigurationService;
 
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.model.NWUCourse;
-import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 @Slf4j
@@ -37,31 +36,16 @@ public class Utility {
 
     /**
      * Returns a unique set of CourseSet Ids. (Examples: WISK, AFNL)
-     * @param cmStructures
-     * @return
+     * @param course
+     * @return courseSet
      */
-//    public static Set<String> getCourseSetIds(final Set<Module> modules) {
-//        Set<String> courseSetIds = new HashSet<String>();
-//        for (Module module : modules) {
-//            courseSetIds.add(module.getCourseCode());
-//        }
-//        return courseSetIds;
-//    }
-    public static String getCourseSet(NWUCourse course) { //ECCR411
+    public static String getCourseSet(NWUCourse course) {
         return StringUtils.substring(course.getCourseCode(), 0, 4);
     }
-
 
     /**
       * Returns a CanonicalCourses id. (Examples: WISK111, AFNL111)
       */
-//    public static Set<String> getCanonicalCourseIds(final Set<Module> modules) {
-//        Set<String> canonicalCourseIds = new HashSet<String>();
-//        for (Module module : modules) {
-//            canonicalCourseIds.add(module.getCanonicalCourseReference());
-//        }
-//        return canonicalCourseIds;
-//    }
     public static String getCanonicalCourseReference(NWUCourse course) {
         return course.getCourseCode();
     } 
@@ -83,13 +67,6 @@ public class Utility {
     /**
      * Returns a unique set of Lecturer user names. (Examples: david, john123)
      */
-//    public static Set<String> getLecturerUserNames(final Module module) {
-//        Set<String> lecturerUserNames = new HashSet<String>();
-//        for (Lecturer lecturer : module.getLinkedLecturers()) {
-//            lecturerUserNames.add(lecturer.getUserName());
-//        }
-//        return lecturerUserNames;
-//    }
     public static Set<String> getLecturerUserNames(final NWUCourse course) {
         Set<String> lecturerUserNames = new HashSet<String>();
 //        lecturerUserNames.add("" + course.getInstructorNumber());
@@ -106,22 +83,6 @@ public class Utility {
         }
         return studentUserNames;
     }
-//
-//    /**
-//     * Returns a unique set of Lecturers linked to a CourseSet.
-//     */
-//    public static Set<String> getLecturersLinkedToCourseSet(final String courseSetId,
-//            final Set<Module> modules) {
-//        Set<String> lecturerUserNames = new HashSet<String>();
-//        for (Module module : modules) {
-//            if (Utility.equals(courseSetId, module.getCourseCode())) {
-//                for (Lecturer lecturer : module.getLinkedLecturers()) {
-//                    lecturerUserNames.add(lecturer.getUserName());
-//                }
-//            }
-//        }
-//        return lecturerUserNames;
-//    }
 
     public static LDAPRetrieval getLDAPRetrieval(
             ServerConfigurationService serverConfigurationService) {

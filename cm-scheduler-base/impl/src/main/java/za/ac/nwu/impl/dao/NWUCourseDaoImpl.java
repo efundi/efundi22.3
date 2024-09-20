@@ -101,4 +101,34 @@ public class NWUCourseDaoImpl extends HibernateDaoSupport implements NWUCourseDa
 		q.setParameter("semCode", semCode);
 		return (NWUCourse) q.uniqueResult();
 	}
+
+	@Override
+	public List<NWUCourse> getAllCoursesWithNoSiteId() {
+
+		List<NWUCourse> courses = new ArrayList<>();
+
+		HibernateCallback<List<NWUCourse>> hcb = session -> {
+			Query q = session.getNamedQuery("FindAllCoursesWithNoSiteId");
+			return q.list();
+		};
+
+		courses = getHibernateTemplate().execute(hcb);
+
+		return courses;
+	}
+
+	@Override
+	public List<NWUCourse> getAllCoursesWithSiteId() {
+
+		List<NWUCourse> courses = new ArrayList<>();
+
+		HibernateCallback<List<NWUCourse>> hcb = session -> {
+			Query q = session.getNamedQuery("FindAllCoursesWithSiteId");
+			return q.list();
+		};
+
+		courses = getHibernateTemplate().execute(hcb);
+
+		return courses;
+	}
 }

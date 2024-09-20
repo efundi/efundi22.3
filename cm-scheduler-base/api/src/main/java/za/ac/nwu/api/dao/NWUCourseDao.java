@@ -19,6 +19,10 @@ public interface NWUCourseDao {
 	public NWUCourse getCourseById(Long id);
 
 	public boolean deleteCourse(Long id);
+	
+	public List<NWUCourse> getAllCoursesWithNoSiteId();	
+
+	public List<NWUCourse> getAllCoursesWithSiteId();
 
 	public List<NWUCourse> getAllCoursesByYearAndSiteId(int year);
 
