@@ -85,14 +85,14 @@ public class NWUCourse {
 	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
     
-//    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL)
-//    @PrimaryKeyJoinColumn
-    
     @OneToOne(mappedBy = "course")
     @ToString.Exclude private NWULecturer lecturer;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="course")  
     @ToString.Exclude private List<NWUStudentEnrollment> students = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy="course")  
+    @ToString.Exclude private List<NWUGBLesson> lessons = new ArrayList<>();
         
 	public NWUCourse() {
 	}

@@ -353,7 +353,7 @@ public class NWUCourseManager {
 	/**
 	 * Updating Lecturers data for courses
 	 */
-	public void updateCourseLecturers(NWUCourse course, List<NWULecturer> lecturers) {
+	public void updateCourseLecturers(NWUCourse course) {
 		
 		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);
 

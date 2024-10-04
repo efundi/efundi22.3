@@ -241,6 +241,9 @@
                 <bean parent="org.sakaiproject.ignite.cache.atomic">
                     <property name="name" value="za.ac.nwu.api.model.NWULecturer"/>
                 </bean>
+                <bean parent="org.sakaiproject.ignite.cache.atomic">
+                    <property name="name" value="za.ac.nwu.api.model.NWUGBLesson"/>
+                </bean>
             </list>
         </constructor-arg>
     </bean>

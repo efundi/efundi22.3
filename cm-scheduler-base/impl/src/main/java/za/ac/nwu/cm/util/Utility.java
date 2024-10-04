@@ -1,6 +1,7 @@
 package za.ac.nwu.cm.util;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,8 @@ import org.sakaiproject.component.api.ServerConfigurationService;
 
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.model.NWUCourse;
+import za.ac.nwu.api.model.NWUGBLesson;
+import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 @Slf4j
@@ -91,4 +94,39 @@ public class Utility {
         }
         return ldapRetrieval;
     }
+
+	/**
+	 * Utility method for printing course info
+	 * 
+	 * @param courses
+	 */
+    public static void printCoursesInfo(List<NWUCourse> courses) {
+
+		for (NWUCourse course : courses) {
+
+			log.info("NWUCourse Info ============================================================ ");
+			log.info("NWUCourse: " + course);
+			
+			NWULecturer lecturer = course.getLecturer();
+			log.info("NWULecturer: " + lecturer);
+			
+			List<NWUStudentEnrollment> students = course.getStudents();
+			if (students.isEmpty()) {
+				log.info("No students found ");
+			} else {
+				for (NWUStudentEnrollment student : students) {
+					log.info("NWUStudentEnrollment: " + student);
+				}
+			}
+			
+			List<NWUGBLesson> lessons = course.getLessons();
+			if (lessons.isEmpty()) {
+				log.info("No lessons found ");
+			} else {
+				for (NWUGBLesson lesson : lessons) {
+					log.info("NWUGBLesson: " + lesson);
+				}
+			}
+		}
+	}
 }

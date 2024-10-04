@@ -21,13 +21,13 @@ import lombok.ToString;
 
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Table(name = "cm_course_section_instructor")
+@Table(name = "gb_lesson_plan")
 @Data
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-public class NWULecturer {
-	
+public class NWUGBLesson {	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id")
@@ -38,11 +38,21 @@ public class NWULecturer {
 	private Long courseId;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "instructor_number", nullable = false)
-	private Integer instructorNumber;
+	@Column(name = "class_test_number", nullable = false)
+	private Integer classTestNumber;
 
-	@Column(name = "instructor_name", length = 160, nullable = true)
-	private String instructorName;
+	@EqualsAndHashCode.Include
+	@Column(name = "class_test_code", length = 8, nullable = false)
+	private String classTestCode;	
+
+	@Column(name = "class_test_name", length = 40, nullable = true)
+	private String classTestName;
+
+	@Column(name = "class_test_max_score", nullable = false)
+	private Double classTestMaxScore;
+	
+	@Column(name = "efundi_gradebook_id", nullable = true)
+	private Long efundiGradebookId;
 
     @Type(type = "org.hibernate.type.InstantType")
 	@Column(name = "audit_date_time", nullable = false)
@@ -52,13 +62,16 @@ public class NWULecturer {
     @JoinColumn(name="course_id", updatable = false, insertable = false)
     @ToString.Exclude private NWUCourse course;
     
-	public NWULecturer() {
+	public NWUGBLesson() {
 	}
 
-	public NWULecturer(Long courseId, Integer instructorNumber, String instructorName, Instant auditDateTime) {
+	public NWUGBLesson(Long courseId, Integer classTestNumber, String classTestCode, String classTestName,
+			Double classTestMaxScore, Instant auditDateTime) {
 		this.courseId = courseId;
-		this.instructorNumber = instructorNumber;
-		this.instructorName = instructorName;
+		this.classTestNumber = classTestNumber;
+		this.classTestCode = classTestCode;
+		this.classTestName = classTestName;
+		this.classTestMaxScore = classTestMaxScore;
 		this.auditDateTime = auditDateTime;
 	}
 }

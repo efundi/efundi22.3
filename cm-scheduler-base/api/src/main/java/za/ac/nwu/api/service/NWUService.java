@@ -21,4 +21,6 @@ public interface NWUService {
 
     public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException;
 
+	public void updateNWUCourseLessonPlans(Date previousFireTime) throws JobExecutionException;
+
 }

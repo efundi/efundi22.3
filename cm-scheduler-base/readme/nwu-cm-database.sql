@@ -33,6 +33,7 @@ CREATE TABLE `gb_lesson_plan` (
   `class_test_code` varchar(8) NOT NULL,
   `class_test_name` varchar(40) NULL,
   `class_test_max_score` DOUBLE(3,0) NOT NULL,
+  `efundi_gradebook_id` bigint(20) NULL,
   `audit_date_time` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `gb_lp_unique_index` (`course_id`,`class_test_number`,`class_test_code`),

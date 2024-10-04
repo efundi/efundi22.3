@@ -21,6 +21,7 @@ import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.id.api.IdManager;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.SiteService;
@@ -40,10 +41,13 @@ import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.dao.NWUCourseDao;
 import za.ac.nwu.api.dao.NWUCourseEnrollmentDao;
 import za.ac.nwu.api.dao.NWUCourseLecturerDao;
+import za.ac.nwu.api.dao.NWUCourseLessonDao;
 import za.ac.nwu.api.model.NWUCourse;
+import za.ac.nwu.api.model.NWUGBLesson;
 import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
+import za.ac.nwu.cm.util.NWUCourseLessonPlanManager;
 import za.ac.nwu.cm.util.NWUCourseManager;
 import za.ac.nwu.cm.util.Utility;
 
@@ -65,12 +69,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private CourseManagementService cmService;
 	private CourseManagementAdministration cmAdmin;
 	private IdManager idManager;
+	private GradebookService gradebookService;
 
 	private ApplicationContext applicationContext;
 
 	private NWUCourseDao courseDao;
 	private NWUCourseEnrollmentDao enrollmentDao;
 	private NWUCourseLecturerDao lecturerDao;
+	private NWUCourseLessonDao lessonDao;
 
 	private static final String BLANK_SPACE = " ";
 	private static final String HYPHEN = "-";
@@ -151,13 +157,13 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 
 		// Get all CM data with no Sakai site id
-		List<NWUCourse> courses = courseDao.getAllCoursesWithNoSiteId();
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteId();
 		if (courses.isEmpty()) {
 			log.info("No courses found ");
 		}
 		if (!courses.isEmpty()) {
-			
-			printCoursesInfo(courses);
+
+			Utility.printCoursesInfo(courses);
 
 			// Become admin in order to add sites
 //			SecurityAdvisor yesMan = new SecurityAdvisor() {
@@ -201,26 +207,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		}
 	}
 
-	private void printCoursesInfo(List<NWUCourse> courses) {
-
-		for (NWUCourse course : courses) {
-
-			log.info("NWUCourse Info ============================================================ ");
-			log.info("NWUCourse: " + course);
-			NWULecturer lecturer = course.getLecturer();
-			log.info("NWULecturer: " + lecturer);
-			List<NWUStudentEnrollment> students = course.getStudents();
-
-			if (students.isEmpty()) {
-				log.info("No students found ");
-			} else {
-				for (NWUStudentEnrollment student : students) {
-					log.info("NWUStudentEnrollment: " + student);
-				}
-			}
-		}
-	}
-
 	/**
 	 * Updating NWU Course Sites from CM data
 	 */
@@ -230,7 +216,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
 		
 		// Get all CM data with no Sakai site id
-		List<NWUCourse> courses = courseDao.getAllCoursesWithNoSiteId();
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteId();
 		if (!courses.isEmpty()) {
 
 			// Become admin in order to add sites
@@ -280,14 +266,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);
 		
 		// Get all CM data with Sakai site id
-		List<NWUCourse> courses = courseDao.getAllCoursesWithSiteId();
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithSiteId();
 
 		if (courses.isEmpty()) {
 			log.info("No courses found ");
 		}
 		if (!courses.isEmpty()) {
 			
-			printCoursesInfo(courses);
+			Utility.printCoursesInfo(courses);
 			log.info("Job PreviousFireTime: " + previousFireTime);
 
 			try {
@@ -300,14 +286,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 				for (NWUCourse course : courses) {
 
-					NWULecturer lecturer = course.getLecturer();
-					if (lecturer == null) {
-						log.error("Course must have an Instuctor: " + course);
-						continue;
-					}
+//					NWULecturer lecturer = course.getLecturer();
+//					if (lecturer == null) {
+//						log.error("Course must have an Instuctor: " + course);
+//						continue;
+//					}
 
 					// Manage Course Enrollment
-					List<NWUStudentEnrollment> enrollmentList = enrollmentDao
+					List<NWUStudentEnrollment> enrollmentList = getEnrollmentDao()
 							.getEnrollmentsByCourseIdAndDate(course.getId(), previousFireTime);
 					
 					if (enrollmentList != null && !enrollmentList.isEmpty()) {
@@ -342,14 +328,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);
 
 		// Get all CM data with Sakai site id
-		List<NWUCourse> courses = courseDao.getAllCoursesWithSiteId();
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithSiteId();
 		
 		if (courses.isEmpty()) {
 			log.info("No courses found ");
 		}
 		if (!courses.isEmpty()) {
 			
-			printCoursesInfo(courses);
+			Utility.printCoursesInfo(courses);
 			log.info("Job PreviousFireTime: " + previousFireTime);
 
 			try {
@@ -369,10 +355,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					}
 
 					// Manage Course Lecturers
-					List<NWULecturer> lecturers = lecturerDao.getLecturersByCourseIdAndDate(course.getId(),
+					List<NWULecturer> lecturers = getLecturerDao().getLecturersByCourseIdAndDate(course.getId(),
 							previousFireTime);
 					if (lecturers != null && !lecturers.isEmpty()) {
-						courseManager.updateCourseLecturers(course, lecturers);
+						courseManager.updateCourseLecturers(course);
 					} else {
 						log.info("No lecturers found ");
 					}
@@ -382,6 +368,63 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				log.error(e.getMessage(), e);
 
 				throw new JobExecutionException("updateNWUCourseLecturers failed: " + e.getMessage());
+			} finally {
+//				securityService.popAdvisor(yesMan);
+				logoutFromSakai();
+			}
+		}
+	}
+
+	/**
+	 * Reads all Lesson plan data for courses and create Gradebook items accordingly
+	 * 
+	 * @throws JobExecutionException
+	 * 
+	 */
+	public void updateNWUCourseLessonPlans(Date previousFireTime) throws JobExecutionException {
+
+		// Get all CM data with Sakai site id
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithSiteId();
+		
+		if (courses.isEmpty()) {
+			log.info("No courses found ");
+		}
+		if (!courses.isEmpty()) {
+			
+			Utility.printCoursesInfo(courses);
+			log.info("Job PreviousFireTime: " + previousFireTime);
+
+			try {
+
+				loginToSakai();
+//				securityService.pushAdvisor(yesMan);
+
+				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService, serverConfigurationService, siteService, gradebookService);
+
+				for (NWUCourse course : courses) {
+
+//					NWULecturer lecturer = course.getLecturer();
+//					if (lecturer == null) {
+//						log.error("Course must have an Instuctor: " + course);
+//						continue;
+//					}
+
+					// Manage Course Lesson plans
+//					List<NWUGBLesson> lessons = getLessonDao().getLessonsByCourseIdAndDate(course.getId(),
+//							previousFireTime);
+					List<NWUGBLesson> lessons = course.getLessons();
+					
+					if (lessons != null && !lessons.isEmpty()) {
+						lessonManager.updateCourseLessonPlan(getLessonDao(), course, lessons);
+					} else {
+						log.info("No Lesson plans found ");
+					}
+				}
+
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+
+				throw new JobExecutionException("updateNWUCourseLessonPlans failed: " + e.getMessage());
 			} finally {
 //				securityService.popAdvisor(yesMan);
 				logoutFromSakai();
@@ -571,6 +614,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setLecturerDao(NWUCourseLecturerDao lecturerDao) {
 		this.lecturerDao = lecturerDao;
+	}	
+
+	public NWUCourseLessonDao getLessonDao() {
+		return lessonDao;
+	}
+
+	public void setLessonDao(NWUCourseLessonDao lessonDao) {
+		this.lessonDao = lessonDao;
 	}
 
 	public UserDirectoryService getUserDirectoryService() {
@@ -652,5 +703,13 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setIdManager(IdManager idManager) {
 		this.idManager = idManager;
+	}
+
+	public GradebookService getGradebookService() {
+		return gradebookService;
+	}
+
+	public void setGradebookService(GradebookService gradebookService) {
+		this.gradebookService = gradebookService;
 	}
 }
