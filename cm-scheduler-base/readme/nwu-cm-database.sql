@@ -52,3 +52,13 @@ CREATE TABLE `cm_student_enrollment` (
   CONSTRAINT `fk_stud_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `gb_lesson_grades` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lesson_id`int(11) NOT NULL,
+  `nwu_number` int(20) NOT NULL,  
+  `grade` DOUBLE(3,0) NOT NULL,
+  `audit_date_time` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gb_lg_unique_index` (`lesson_id`,`nwu_number`),
+  CONSTRAINT `fk_lg_course_id` FOREIGN KEY (`lesson_id`) REFERENCES `gb_lesson_plan` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

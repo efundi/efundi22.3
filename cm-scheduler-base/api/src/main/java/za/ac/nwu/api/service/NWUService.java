@@ -11,15 +11,17 @@ import org.quartz.JobExecutionException;
  * @author JC Gillman
  *
  */
-public interface NWUService {	
-    
-    public void updateNWUCourseManagement() throws JobExecutionException;
+public interface NWUService {
 
-    public void updateNWUeFundiCourseSites() throws JobExecutionException;
-    
-    public void updateNWUCourseEnrollments(Date previousFireTime) throws JobExecutionException;
+	public void updateNWUCourseManagement() throws JobExecutionException;
 
-    public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException;
+	public void updateNWUeFundiCourseSites() throws JobExecutionException;
+
+	public void updateNWUCourseEnrollments(Date previousFireTime) throws JobExecutionException;
+
+	public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException;
+
+	public void updateNWULessonGradesUpdateJob() throws JobExecutionException;;
 
 	public void updateNWUCourseLessonPlans(Date previousFireTime) throws JobExecutionException;
 

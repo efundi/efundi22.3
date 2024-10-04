@@ -118,9 +118,26 @@
             </props>
         </property>
     </bean> 
+    
 	<bean
 		id="za.ac.nwu.impl.dao.NWUCourseLessonDaoImpl"
 		class="za.ac.nwu.impl.dao.NWUCourseLessonDaoImpl">
+		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
+	</bean>
+	
+	<bean id="za.ac.nwu.api.dao.NWULessonGradeDao"
+          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
+        <property name="target" ref="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl"/>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
+    </bean> 
+	<bean
+		id="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl"
+		class="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl">
 		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
 	</bean>
 	
@@ -134,6 +151,7 @@
                 <value>za.ac.nwu.api.model.NWUStudentEnrollment</value>
                 <value>za.ac.nwu.api.model.NWULecturer</value>
                 <value>za.ac.nwu.api.model.NWUGBLesson</value>
+                <value>za.ac.nwu.api.model.NWULessonGrade</value>
             </list>
         </property>
     </bean>
@@ -149,7 +167,9 @@
 		<property name="lecturerDao"
 			ref="za.ac.nwu.api.dao.NWUCourseLecturerDao" />
 		<property name="lessonDao"
-			ref="za.ac.nwu.api.dao.NWUCourseLessonDao" />			
+			ref="za.ac.nwu.api.dao.NWUCourseLessonDao" />
+		<property name="lessonGradeDao"
+			ref="za.ac.nwu.api.dao.NWULessonGradeDao" />				
 		<property name="userDirectoryService"
 			ref="org.sakaiproject.user.api.UserDirectoryService" />
 		<property name="serverConfigurationService"

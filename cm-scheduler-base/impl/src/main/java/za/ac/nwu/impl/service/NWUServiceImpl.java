@@ -42,6 +42,7 @@ import za.ac.nwu.api.dao.NWUCourseDao;
 import za.ac.nwu.api.dao.NWUCourseEnrollmentDao;
 import za.ac.nwu.api.dao.NWUCourseLecturerDao;
 import za.ac.nwu.api.dao.NWUCourseLessonDao;
+import za.ac.nwu.api.dao.NWULessonGradeDao;
 import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWUGBLesson;
 import za.ac.nwu.api.model.NWULecturer;
@@ -77,6 +78,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private NWUCourseEnrollmentDao enrollmentDao;
 	private NWUCourseLecturerDao lecturerDao;
 	private NWUCourseLessonDao lessonDao;
+	private NWULessonGradeDao lessonGradeDao;
 
 	private static final String BLANK_SPACE = " ";
 	private static final String HYPHEN = "-";
@@ -531,6 +533,20 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			overviewPage.setLayout(SitePage.LAYOUT_DOUBLE_COL);
 		}
 	}
+	
+		public void updateNWULessonGradesUpdateJob() throws JobExecutionException {
+
+			try {
+
+				loginToSakai();
+//				securityService.pushAdvisor(yesMan);
+			}
+			finally {
+//		securityService.popAdvisor(yesMan);
+		logoutFromSakai();
+	}
+	}
+	
 
 	/**
 	 * Sakai admin login
@@ -623,6 +639,15 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	public void setLessonDao(NWUCourseLessonDao lessonDao) {
 		this.lessonDao = lessonDao;
 	}
+	
+	public NWULessonGradeDao getLessonGradeDao() {
+		return lessonGradeDao;
+	}
+
+	public void setLessonGradeDao(NWULessonGradeDao lessonGradeDao) {
+		this.lessonGradeDao = lessonGradeDao;
+	}
+
 
 	public UserDirectoryService getUserDirectoryService() {
 		return userDirectoryService;
