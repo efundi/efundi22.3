@@ -50,6 +50,7 @@ import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
 import za.ac.nwu.cm.util.NWUCourseLessonPlanManager;
 import za.ac.nwu.cm.util.NWUCourseManager;
+import za.ac.nwu.cm.util.NWULessonGradesManager;
 import za.ac.nwu.cm.util.Utility;
 
 /**
@@ -534,12 +535,33 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		}
 	}
 	
-		public void updateNWULessonGradesUpdateJob() throws JobExecutionException {
+		public void updateNWULessonGradesUpdateJob(Date previousFireTime) throws JobExecutionException {
 
-			try {
+			List<NWUGBLesson> lessons = getLessonDao().getLessons();
+			
+			if (lessons.isEmpty()) {
+				log.info("No lessons found ");
+			}
+			if (!lessons.isEmpty()) {
+				
+				Utility.printLessonInfo(lessons);
+				log.info("Job PreviousFireTime: " + previousFireTime);
+
+				try {
 
 				loginToSakai();
 //				securityService.pushAdvisor(yesMan);
+				
+				NWULessonGradesManger lessonGradeManger = new NWULessonGradesManger();
+				
+				for (NWUGBLesson lesson : lessons) {
+					
+					lesson.
+					
+				}
+				
+				
+				
 			}
 			finally {
 //		securityService.popAdvisor(yesMan);

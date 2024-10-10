@@ -21,8 +21,7 @@
 		<dependency>
 			<groupId>za.ac.nwu</groupId>
 			<artifactId>cm-scheduler-api</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
+			<version>2.0.0</version>
 		</dependency>
 		<!-- Sakai Kernel Component Manager -->
 		<dependency>

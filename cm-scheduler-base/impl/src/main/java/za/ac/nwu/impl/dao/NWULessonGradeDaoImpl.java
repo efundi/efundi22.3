@@ -61,7 +61,9 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 	}
 
 	@Override
-	public List<NWULessonGrade> FindAllGradesbyNwuNumber(int nuwNumber) {
+
+	public List<NWULessonGrade> getAllGradesbyNwuNumber(int nuwNumber) {
+
 		List<NWULessonGrade> grades = new ArrayList<>();
 
 		HibernateCallback<List<NWULessonGrade>> hcb = session -> {

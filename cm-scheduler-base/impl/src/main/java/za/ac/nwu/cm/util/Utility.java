@@ -129,4 +129,13 @@ public class Utility {
 			}
 		}
 	}
+    
+    public static void printLessonInfo(List<NWUGBLesson> lessons) {
+
+		for (NWUGBLesson lesson : lessons) {
+			log.info("NWULesson Info ============================================================ ");
+			log.info("NWULesson: " + lesson);
+						
+		}
+	}
 }

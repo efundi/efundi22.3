@@ -22,6 +22,7 @@ public interface NWULessonGradeDao {
 	
 	public List<NWULessonGrade> getAllGradesByLessonId();	
 	
-	public List<NWULessonGrade> FindAllGradesbyNwuNumber(int nuwNumber);
+	public List<NWULessonGrade> getAllGradesbyNwuNumber(int nuwNumber);
+
 
 }
