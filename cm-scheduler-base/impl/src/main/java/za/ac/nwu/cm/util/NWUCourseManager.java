@@ -63,8 +63,8 @@ public class NWUCourseManager {
 	private String sectionCategory = null;
 	private String sectionCategoryDesc = null;
 
-	private static final String REGISTERED = "Registered";
-	private static final String WITHDRAWN = "Withdrawn";
+	private static final String SCHEDULED = "Scheduled";
+	private static final String DROPPED = "Dropped";
 
 	public NWUCourseManager(final CourseManagementAdministration cmAdmin, final CourseManagementService cmService,
 			final UserDirectoryService userDirectoryService,
@@ -305,7 +305,7 @@ public class NWUCourseManager {
 		Set<RosterUser> students = new HashSet<RosterUser>();
 		for (Iterator iterator = enrollmentList.iterator(); iterator.hasNext();) {
 			NWUStudentEnrollment studentEnrollment = (NWUStudentEnrollment) iterator.next();
-			if (studentEnrollment.getStudentStatus().equals(REGISTERED)) {
+			if (studentEnrollment.getCourseStatus().equals(SCHEDULED)) {
 				// Enrollment
 				cmAdmin.addOrUpdateEnrollment("" + studentEnrollment.getNwuNumber(), enrollmentSetReference,
 						enrollmentStatus, enrollmentCredits, gradingScheme);
@@ -319,7 +319,7 @@ public class NWUCourseManager {
 				students.add(new RosterUser("" + studentEnrollment.getNwuNumber()));
 			}
 
-			if (studentEnrollment.getStudentStatus().equals(WITHDRAWN)) {
+			if (studentEnrollment.getCourseStatus().equals(DROPPED)) {
 				// Section Memberships
 				cmAdmin.removeSectionMembership("" + studentEnrollment.getNwuNumber(), courseOfferingReference);
 				log.info("Removed Student Membership from Section: " + studentEnrollment.getNwuNumber() + " - "

@@ -44,7 +44,7 @@ CREATE TABLE `cm_student_enrollment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `course_id` int(11) NOT NULL,
   `nwu_number` int(20) NOT NULL,
-  `student_status` VARCHAR(30) NOT NULL,
+  `course_status` VARCHAR(30) NOT NULL,
   `faculty` VARCHAR(45) NOT NULL,
   `audit_date_time` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
