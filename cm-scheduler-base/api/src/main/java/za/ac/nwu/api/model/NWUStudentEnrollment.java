@@ -41,8 +41,8 @@ public class NWUStudentEnrollment {
 	@Column(name = "nwu_number", nullable = false)
 	private Integer nwuNumber;
 
-	@Column(name = "student_status", length = 45, nullable = false)
-	private String studentStatus;
+	@Column(name = "course_status", length = 30, nullable = false)
+	private String courseStatus;
 
 	@Column(name = "faculty", length = 45, nullable = false)
 	private String faculty;
@@ -58,11 +58,11 @@ public class NWUStudentEnrollment {
 	public NWUStudentEnrollment() {
 	}
 
-	public NWUStudentEnrollment(Long courseId, Integer nwuNumber, String studentStatus, String faculty,
+	public NWUStudentEnrollment(Long courseId, Integer nwuNumber, String courseStatus, String faculty,
 			Instant auditDateTime) {
 		this.courseId = courseId;
 		this.nwuNumber = nwuNumber;
-		this.studentStatus = studentStatus;
+		this.courseStatus = courseStatus;
 		this.faculty = faculty;
 		this.auditDateTime = auditDateTime;
 	}
