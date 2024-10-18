@@ -20,9 +20,10 @@ public interface NWULessonGradeDao {
 
 	public boolean deleteLessonGrade(Long id);
 	
-	public List<NWULessonGrade> getAllGradesByLessonId();	
+	public List<NWULessonGrade> getAllGradesByLessonId(long lesson_id);
 	
 	public List<NWULessonGrade> getAllGradesbyNwuNumber(int nuwNumber);
+
 
 
 }

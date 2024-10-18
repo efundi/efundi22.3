@@ -65,6 +65,8 @@ public class NWUCourseManager {
 
 	private static final String SCHEDULED = "Scheduled";
 	private static final String DROPPED = "Dropped";
+	private static final String FUTURE = "Future";	
+
 
 	public NWUCourseManager(final CourseManagementAdministration cmAdmin, final CourseManagementService cmService,
 			final UserDirectoryService userDirectoryService,
@@ -318,8 +320,7 @@ public class NWUCourseManager {
 				
 				students.add(new RosterUser("" + studentEnrollment.getNwuNumber()));
 			}
-
-			if (studentEnrollment.getCourseStatus().equals(DROPPED)) {
+			if (studentEnrollment.getCourseStatus().equals(DROPPED) || studentEnrollment.getCourseStatus().equals(FUTURE)) {
 				// Section Memberships
 				cmAdmin.removeSectionMembership("" + studentEnrollment.getNwuNumber(), courseOfferingReference);
 				log.info("Removed Student Membership from Section: " + studentEnrollment.getNwuNumber() + " - "

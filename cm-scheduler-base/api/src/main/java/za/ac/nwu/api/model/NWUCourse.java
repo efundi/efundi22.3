@@ -110,4 +110,17 @@ public class NWUCourse {
 		this.efundiSiteId = efundiSiteId;
 		this.auditDateTime = auditDateTime;
 	}
+
+	public List<NWUGBLesson> getLessons() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public String getEfundiSiteId() {
+		return this.efundiSiteId;
+	}
+	
+	public Long getCourseId() {
+		return this.id;
+	}
 }

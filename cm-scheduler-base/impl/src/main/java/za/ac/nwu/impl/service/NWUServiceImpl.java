@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ import za.ac.nwu.api.dao.NWULessonGradeDao;
 import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWUGBLesson;
 import za.ac.nwu.api.model.NWULecturer;
+import za.ac.nwu.api.model.NWULessonGrade;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
 import za.ac.nwu.cm.util.NWUCourseLessonPlanManager;
@@ -537,38 +539,43 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	
 		public void updateNWULessonGradesUpdateJob(Date previousFireTime) throws JobExecutionException {
 
-			List<NWUGBLesson> lessons = getLessonDao().getLessons();
+	
 			
-			if (lessons.isEmpty()) {
-				log.info("No lessons found ");
+			List<NWUCourse> courses = getCourseDao().getAllCoursesWithSiteId();
+			NWUCourseEnrollmentDao nwuCourseEnrollDAO;
+			NWULessonGradeDao nwuLessonGradeDao;			
+			
+			if (courses.isEmpty()) {
+				log.info("No courses found ");
 			}
-			if (!lessons.isEmpty()) {
-				
-				Utility.printLessonInfo(lessons);
+			if (!courses.isEmpty()) {				
+			//	Utility.printCoursesInfo(courses);
 				log.info("Job PreviousFireTime: " + previousFireTime);
 
-				try {
-
-				loginToSakai();
-//				securityService.pushAdvisor(yesMan);
-				
-				NWULessonGradesManger lessonGradeManger = new NWULessonGradesManger();
-				
-				for (NWUGBLesson lesson : lessons) {
+				for (NWUCourse course : courses) {
 					
-					lesson.
+					List<NWUGBLesson> lessons = course.getLessons();
 					
+					if (lessons.isEmpty()) {
+						log.info("No lessons found ");
+					}
+					if (!lessons.isEmpty()) {
+				
+//						loginToSakai();
+//						securityService.pushAdvisor(yesMan);						
+						NWULessonGradesManager lessonGradeManger = new NWULessonGradesManager();
+						List<NWUStudentEnrollment>  students = nwuCourseEnrollDAO.getEnrollmentsByCourseIdAndDate(course.getCourseId(), previousFireTime);
+						
+						for (NWUStudentEnrollment stud : students) {					
+							
+							//loop students for id and course							
+							
+						}
 				}
-				
-				
-				
 			}
-			finally {
-//		securityService.popAdvisor(yesMan);
-		logoutFromSakai();
-	}
-	}
-	
+		}
+		}
+
 
 	/**
 	 * Sakai admin login

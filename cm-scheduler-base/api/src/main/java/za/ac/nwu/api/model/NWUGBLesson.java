@@ -74,4 +74,17 @@ public class NWUGBLesson {
 		this.classTestMaxScore = classTestMaxScore;
 		this.auditDateTime = auditDateTime;
 	}
+
+	public Object getEfundiGradebookId() {
+		return this.efundiGradebookId;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public Long getCourseSiteId() {
+		return courseId;
+		
+	}
 }

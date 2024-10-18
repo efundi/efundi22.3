@@ -1,161 +1,209 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:tx="http://www.springframework.org/schema/tx"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans.xsd
-	    http://www.springframework.org/schema/tx 
-        http://www.springframework.org/schema/tx/spring-tx.xsd">
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-	<tx:annotation-driven transaction-manager="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>              
-    
+	<tx:annotation-driven
+		transaction-manager="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+
 	<!-- NWUCourseManagementUpdateJob -->
-	<bean id="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob" class="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob">
+	<bean id="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob"
+		class="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob">
 		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
 	</bean>
 	<bean
 		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob"
-		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper" init-method="init">
-		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob" />
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
+		init-method="init">
+		<property name="beanId"
+			value="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob" />
 		<property name="jobName" value="NWU Course Management Population Job" />
-		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+		<property name="schedulerManager"
+			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
 	</bean>
-	
+
 	<!-- NWUCourseEnrollmentUpdateJob -->
-	<bean id="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob" class="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob">
+	<bean id="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob"
+		class="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob">
 		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
-        <property name="triggerEventManager" ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager"/>
+		<property name="triggerEventManager"
+			ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager" />
 	</bean>
 	<bean
 		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob"
-		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper" init-method="init">
-		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob" />
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
+		init-method="init">
+		<property name="beanId"
+			value="za.ac.nwu.cm.jobs.NWUCourseEnrollmentUpdateJob" />
 		<property name="jobName" value="NWU Course Enrollment Update Job" />
-		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+		<property name="schedulerManager"
+			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
 	</bean>
-	
+
 	<!-- NWUCourseLecturerUpdateJob -->
-	<bean id="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob" class="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob">
+	<bean id="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob"
+		class="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob">
 		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
-        <property name="triggerEventManager" ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager"/>
+		<property name="triggerEventManager"
+			ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager" />
 	</bean>
 	<bean
 		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob"
-		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper" init-method="init">
-		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob" />
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
+		init-method="init">
+		<property name="beanId"
+			value="za.ac.nwu.cm.jobs.NWUCourseLecturerUpdateJob" />
 		<property name="jobName" value="NWU Course Lecturer Update Job" />
-		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+		<property name="schedulerManager"
+			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
 	</bean>
-	
+
 	<!-- NWUCourseLessonPlanJob -->
-	<bean id="za.ac.nwu.cm.jobs.NWUCourseLessonPlanJob" class="za.ac.nwu.cm.jobs.NWUCourseLessonPlanJob">
+	<bean id="za.ac.nwu.cm.jobs.NWUCourseLessonPlanJob"
+		class="za.ac.nwu.cm.jobs.NWUCourseLessonPlanJob">
 		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
-        <property name="triggerEventManager" ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager"/>
+		<property name="triggerEventManager"
+			ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager" />
 	</bean>
 	<bean
 		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseLessonPlanJob"
-		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper" init-method="init">
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
+		init-method="init">
 		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUCourseLessonPlanJob" />
 		<property name="jobName" value="NWU Course Lesson Plan Job" />
-		<property name="schedulerManager" ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+		<property name="schedulerManager"
+			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
 	</bean>
-	
-    <bean id="za.ac.nwu.api.dao.NWUCourseDao"
-          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
-        <property name="target" ref="za.ac.nwu.impl.dao.NWUCourseDaoImpl"/>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">PROPAGATION_REQUIRED</prop>
-            </props>
-        </property>
-    </bean>    
+
+	<!-- NWUCourseLessonGradeJob -->
+	<bean id="za.ac.nwu.cm.jobs.NWULessonGradesUpdateJob"
+		class="za.ac.nwu.cm.jobs.NWULessonGradesUpdateJob">
+		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
+		<property name="triggerEventManager"
+			ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager" />
+	</bean>
+	<bean
+		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWULessonGradesUpdateJob"
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
+		init-method="init">
+		<property name="beanId"
+			value="za.ac.nwu.cm.jobs.NWULessonGradesUpdateJob" />
+		<property name="jobName" value="NWU Course Lesson Grades Job" />
+		<property name="schedulerManager"
+			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+	</bean>
+
+	<bean id="za.ac.nwu.api.dao.NWUCourseDao"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+		<property name="target" ref="za.ac.nwu.impl.dao.NWUCourseDaoImpl" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
 	<bean
 		id="za.ac.nwu.impl.dao.NWUCourseDaoImpl"
 		class="za.ac.nwu.impl.dao.NWUCourseDaoImpl">
-		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
+		<property name="sessionFactory"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
 	</bean>
-	
-    <bean id="za.ac.nwu.api.dao.NWUCourseEnrollmentDao"
-          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
-        <property name="target" ref="za.ac.nwu.impl.dao.NWUCourseEnrollmentDaoImpl"/>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">PROPAGATION_REQUIRED</prop>
-            </props>
-        </property>
-    </bean>    
+
+	<bean id="za.ac.nwu.api.dao.NWUCourseEnrollmentDao"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+		<property name="target"
+			ref="za.ac.nwu.impl.dao.NWUCourseEnrollmentDaoImpl" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
 	<bean
 		id="za.ac.nwu.impl.dao.NWUCourseEnrollmentDaoImpl"
 		class="za.ac.nwu.impl.dao.NWUCourseEnrollmentDaoImpl">
-		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
-	</bean>		
-	
-    <bean id="za.ac.nwu.api.dao.NWUCourseLecturerDao"
-          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
-        <property name="target" ref="za.ac.nwu.impl.dao.NWUCourseLecturerDaoImpl"/>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">PROPAGATION_REQUIRED</prop>
-            </props>
-        </property>
-    </bean> 
+		<property name="sessionFactory"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
+	</bean>
+
+	<bean id="za.ac.nwu.api.dao.NWUCourseLecturerDao"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+		<property name="target"
+			ref="za.ac.nwu.impl.dao.NWUCourseLecturerDaoImpl" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
 	<bean
 		id="za.ac.nwu.impl.dao.NWUCourseLecturerDaoImpl"
 		class="za.ac.nwu.impl.dao.NWUCourseLecturerDaoImpl">
-		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
+		<property name="sessionFactory"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
 	</bean>
-	
-    <bean id="za.ac.nwu.api.dao.NWUCourseLessonDao"
-          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
-        <property name="target" ref="za.ac.nwu.impl.dao.NWUCourseLessonDaoImpl"/>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">PROPAGATION_REQUIRED</prop>
-            </props>
-        </property>
-    </bean> 
-    
+
+	<bean id="za.ac.nwu.api.dao.NWUCourseLessonDao"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+		<property name="target" ref="za.ac.nwu.impl.dao.NWUCourseLessonDaoImpl" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+
 	<bean
 		id="za.ac.nwu.impl.dao.NWUCourseLessonDaoImpl"
 		class="za.ac.nwu.impl.dao.NWUCourseLessonDaoImpl">
-		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
+		<property name="sessionFactory"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
 	</bean>
-	
+
 	<bean id="za.ac.nwu.api.dao.NWULessonGradeDao"
-          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager" ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"/>
-        <property name="target" ref="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl"/>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">PROPAGATION_REQUIRED</prop>
-            </props>
-        </property>
-    </bean> 
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+		<property name="target" ref="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
 	<bean
 		id="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl"
 		class="za.ac.nwu.impl.dao.NWULessonGradeDaoImpl">
-		<property name="sessionFactory" ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
+		<property name="sessionFactory"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
 	</bean>
-	
-    <!--  Hibernate persistence -->
 
-    <bean id="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappings.nwu"
-          class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
-        <property name="annotatedClasses">
-            <list>
-                <value>za.ac.nwu.api.model.NWUCourse</value>
-                <value>za.ac.nwu.api.model.NWUStudentEnrollment</value>
-                <value>za.ac.nwu.api.model.NWULecturer</value>
-                <value>za.ac.nwu.api.model.NWUGBLesson</value>
-                <value>za.ac.nwu.api.model.NWULessonGrade</value>
-            </list>
-        </property>
-    </bean>
-	
+	<!--  Hibernate persistence -->
+
+	<bean
+		id="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappings.nwu"
+		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
+		<property name="annotatedClasses">
+			<list>
+				<value>za.ac.nwu.api.model.NWUCourse</value>
+				<value>za.ac.nwu.api.model.NWUStudentEnrollment</value>
+				<value>za.ac.nwu.api.model.NWULecturer</value>
+				<value>za.ac.nwu.api.model.NWUGBLesson</value>
+				<value>za.ac.nwu.api.model.NWULessonGrade</value>
+			</list>
+		</property>
+	</bean>
+
 	<bean
 		id="za.ac.nwu.api.service.NWUService"
 		class="za.ac.nwu.impl.service.NWUServiceImpl"
@@ -169,7 +217,7 @@
 		<property name="lessonDao"
 			ref="za.ac.nwu.api.dao.NWUCourseLessonDao" />
 		<property name="lessonGradeDao"
-			ref="za.ac.nwu.api.dao.NWULessonGradeDao" />				
+			ref="za.ac.nwu.api.dao.NWULessonGradeDao" />
 		<property name="userDirectoryService"
 			ref="org.sakaiproject.user.api.UserDirectoryService" />
 		<property name="serverConfigurationService"
@@ -188,8 +236,10 @@
 			ref="org.sakaiproject.coursemanagement.api.CourseManagementAdministration" />
 		<property name="idManager"
 			ref="org.sakaiproject.id.api.IdManager" />
-		<property name="gradebookService" 
+		<property name="gradebookService"
 			ref="org.sakaiproject.service.gradebook.GradebookService" />
+		<property name="assignmentService"
+			ref="org.sakaiproject.assignment.api.AssignmentService" />
 	</bean>
-	
+
 </beans>

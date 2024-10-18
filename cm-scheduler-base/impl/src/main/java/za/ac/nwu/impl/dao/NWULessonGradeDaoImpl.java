@@ -47,11 +47,11 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 	}
 
 	@Override
-	public List<NWULessonGrade> getAllGradesByLessonId() {
+	public List<NWULessonGrade> getAllGradesByLessonId(long lesson_id) {
 		List<NWULessonGrade> grades = new ArrayList<>();
 
 		HibernateCallback<List<NWULessonGrade>> hcb = session -> {
-			Query q = session.getNamedQuery("FindAllGradesByLessonId");
+			Query q = session.createQuery("SELECT c FROM NWULessonGrade c WHERE c.lesson_id = :lesson_id")
 			return q.list();
 		};
 

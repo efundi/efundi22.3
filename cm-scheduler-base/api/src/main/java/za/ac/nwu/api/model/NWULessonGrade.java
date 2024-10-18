@@ -66,4 +66,6 @@ public class NWULessonGrade {
 		this.grade = grade;
 		this.auditDateTime = auditDateTime;
 	}
+	
+	public 
 }
