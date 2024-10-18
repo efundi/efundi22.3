@@ -66,20 +66,4 @@ public class NWUStudentEnrollment {
 		this.faculty = faculty;
 		this.auditDateTime = auditDateTime;
 	}
-	
-	public Long getId() {
-		return id;
-	}
-	
-	public Long getCourseId() {
-		return courseId;
-	}
-	
-	public Integer getnwuNumber() {
-		return nwuNumber;
-	}
-	
-	public String getCourseStatus() {
-		return courseStatus;
-	}
 }

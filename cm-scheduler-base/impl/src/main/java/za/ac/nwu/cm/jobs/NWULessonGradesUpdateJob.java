@@ -1,5 +1,7 @@
 package za.ac.nwu.cm.jobs;
+
 import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +13,8 @@ import org.sakaiproject.api.app.scheduler.events.TriggerEvent;
 import org.sakaiproject.api.app.scheduler.events.TriggerEventManager;
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.service.NWUService;
+
+
 /**
  * This is a quartz job that creates a Lesson plan in Course Sites
  *
@@ -19,18 +23,21 @@ import za.ac.nwu.api.service.NWUService;
  */
 @Slf4j
 public class NWULessonGradesUpdateJob implements Job {
+	
 	private NWUService service;
 	private TriggerEventManager triggerEventManager;
+
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		log.info("NWULessonGradesUpdateJob - execute start");
-		
-		JobKey jobKey = context.getJobDetail().getKey();		
-		
+
+		JobKey jobKey = context.getJobDetail().getKey();
+
 		List<String> jobs = new ArrayList<>();
 		jobs.add(jobKey.getName());
-		
-		TriggerEvent.TRIGGER_EVENT_TYPE evtTypes[] = new TriggerEvent.TRIGGER_EVENT_TYPE [] {TriggerEvent.TRIGGER_EVENT_TYPE.COMPLETE};
+
+		TriggerEvent.TRIGGER_EVENT_TYPE evtTypes[] = new TriggerEvent.TRIGGER_EVENT_TYPE[] {
+				TriggerEvent.TRIGGER_EVENT_TYPE.COMPLETE };
 		List<TriggerEvent> events = triggerEventManager.getTriggerEvents(null, null, jobs, null, evtTypes, 1, 1);
 		Date previousFireTime = null;
 		for (Iterator iterator = events.iterator(); iterator.hasNext();) {
@@ -39,22 +46,26 @@ public class NWULessonGradesUpdateJob implements Job {
 			break;
 		}
 		try {
-			getService().updateNWULessonGradesUpdateJob(previousFireTime == null ? null : previousFireTime);
+			getService().updateNWULessonStudentGrades(previousFireTime == null ? null : previousFireTime);
 		} catch (JobExecutionException e) {
 			throw new JobExecutionException("NWULessonGradesUpdateJob failed");
 		}
-		
+
 		log.info("NWULessonGradesUpdateJob - execute finished");
 	}
+
 	public NWUService getService() {
 		return service;
 	}
+
 	public void setService(NWUService service) {
 		this.service = service;
 	}
+
 	public TriggerEventManager getTriggerEventManager() {
 		return triggerEventManager;
 	}
+
 	public void setTriggerEventManager(TriggerEventManager triggerEventManager) {
 		this.triggerEventManager = triggerEventManager;
 	}

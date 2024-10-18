@@ -9,7 +9,6 @@ import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import za.ac.nwu.api.dao.NWULessonGradeDao;
-import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWULessonGrade;
 
 
@@ -51,7 +50,7 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 		List<NWULessonGrade> grades = new ArrayList<>();
 
 		HibernateCallback<List<NWULessonGrade>> hcb = session -> {
-			Query q = session.createQuery("SELECT c FROM NWULessonGrade c WHERE c.lesson_id = :lesson_id")
+			Query q = session.createQuery("SELECT c FROM NWULessonGrade c WHERE c.lesson_id = :lesson_id");
 			return q.list();
 		};
 

@@ -11,8 +11,10 @@ import org.sakaiproject.user.api.UserDirectoryService;
 
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.dao.NWUCourseLessonDao;
+import za.ac.nwu.api.dao.NWULessonGradeDao;
 import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWUGBLesson;
+import za.ac.nwu.api.model.NWULessonGrade;
 
 /**
  * This class manages Lessons in Gradebook for courses.
@@ -63,6 +65,7 @@ public class NWUCourseLessonPlanManager {
 					assignment = new Assignment();
 					assignment.setName(lesson.getClassTestName());
 					assignment.setPoints(lesson.getClassTestMaxScore());
+					assignment.setReleased(false);
 					Long assignmentId = gradebookService.addAssignment(course.getEfundiSiteId(), assignment);
 					lesson.setEfundiGradebookId(assignmentId);
 					lessonDao.updateLesson(lesson);
@@ -74,6 +77,27 @@ public class NWUCourseLessonPlanManager {
 					// that important, anyway.
 					log.warn("Failed to set gb item name to: {}", lesson.getClassTestName());
 				}				
+			}
+		}
+	}
+
+	/**
+	 * Add/update Student grade
+	 * 
+	 * @param lessonGradeDao
+	 * @param course
+	 * @param lessons
+	 */
+	public void updateLessonPlanStudentGrades(NWULessonGradeDao lessonGradeDao, NWUCourse course,
+			List<NWUGBLesson> lessons) {
+		for (NWUGBLesson lesson : lessons) {
+			
+			List<NWULessonGrade> studentGrades = lessonGradeDao.getAllGradesByLessonId(lesson.getId());
+						
+			if(studentGrades.isEmpty()) {
+				//add grades
+			} else {
+				//check for grade changes and update
 			}
 		}
 	}

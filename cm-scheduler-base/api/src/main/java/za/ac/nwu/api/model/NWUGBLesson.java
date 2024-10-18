@@ -8,7 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
@@ -57,8 +57,8 @@ public class NWUGBLesson {
     @Type(type = "org.hibernate.type.InstantType")
 	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
-    
-    @OneToOne
+
+    @ManyToOne
     @JoinColumn(name="course_id", updatable = false, insertable = false)
     @ToString.Exclude private NWUCourse course;
     
@@ -73,18 +73,5 @@ public class NWUGBLesson {
 		this.classTestName = classTestName;
 		this.classTestMaxScore = classTestMaxScore;
 		this.auditDateTime = auditDateTime;
-	}
-
-	public Object getEfundiGradebookId() {
-		return this.efundiGradebookId;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public Long getCourseSiteId() {
-		return courseId;
-		
 	}
 }
