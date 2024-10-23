@@ -55,10 +55,13 @@ public class NWUCourseLessonPlanManager {
 		for (NWUGBLesson lesson : lessons) {
 						
 			if(lesson.getEfundiGradebookId() != null) {
-//				if lesson.getAuditDateTime() > previousJobrun date or id date is null else do all
 				
-//				Assignment assignment = gradebookService.getAssignmentByID(lesson.getEfundiGradebookId());
-//				assignment.getName()				
+				assignment = gradebookService.getAssignmentByID(lesson.getEfundiGradebookId());
+				
+				if (assignment != null && !lesson.getClassTestName().equals(assignment.getName())) {
+					assignment.setName(lesson.getClassTestName());
+					gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+				}
 				
 			} else {
 				try {

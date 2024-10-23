@@ -29,8 +29,8 @@ import lombok.ToString;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 @NamedQueries({
-	@NamedQuery(name = "FindAllGradesByLessonId", query = "SELECT c FROM NWULessonGrade c WHERE c.lesson_id = :lesson_id"),
-	@NamedQuery(name = "FindAllGradesbyNwuNumber", query = "SELECT c FROM NWULessonGrade c WHERE c.nwu_number = :nwu_number")})
+	@NamedQuery(name = "FindAllGradesByLessonId", query = "SELECT c FROM NWULessonGrade c WHERE c.lessonId = :lessonId"),
+	@NamedQuery(name = "FindAllGradesbyNwuNumber", query = "SELECT c FROM NWULessonGrade c WHERE c.nwuNumber = :nwuNumber")})
 
 public class NWULessonGrade {
 

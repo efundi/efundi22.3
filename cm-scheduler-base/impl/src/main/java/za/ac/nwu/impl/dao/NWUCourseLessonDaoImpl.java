@@ -11,7 +11,6 @@ import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import za.ac.nwu.api.dao.NWUCourseLessonDao;
 import za.ac.nwu.api.model.NWUGBLesson;
-import za.ac.nwu.api.model.NWULecturer;
 
 public class NWUCourseLessonDaoImpl extends HibernateDaoSupport implements NWUCourseLessonDao {
 

@@ -410,9 +410,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //					}
 
 					// Manage Course Lesson plans
-//					List<NWUGBLesson> lessons = getLessonDao().getLessonsByCourseIdAndDate(course.getId(),
-//							previousFireTime);
-					List<NWUGBLesson> lessons = course.getLessons();
+					List<NWUGBLesson> lessons = getLessonDao().getLessonsByCourseIdAndDate(course.getId(),
+							previousFireTime);
 
 					if (lessons != null && !lessons.isEmpty()) {
 						lessonManager.updateCourseLessonPlan(getLessonDao(), course, lessons);
