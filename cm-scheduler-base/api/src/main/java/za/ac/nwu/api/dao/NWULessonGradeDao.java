@@ -12,16 +12,18 @@ import za.ac.nwu.api.model.NWULessonGrade;
  */
 public interface NWULessonGradeDao {
 
-	public NWULessonGrade updateLessonGrade(NWULessonGrade lesson_grade);
+	public NWULessonGrade updateLessonGrade(NWULessonGrade lessonGrade);
 
 	public List<NWULessonGrade> getLessonGrades();
 
 	public NWULessonGrade getLessonGradeById(Long id);
 
+	public NWULessonGrade getLessonGradeByLessonIdAndNwuNumber(Long lessonId, Integer nwuNumber);
+
 	public boolean deleteLessonGrade(Long id);
 	
-	public List<NWULessonGrade> getAllGradesByLessonId(long lesson_id);
+	public List<NWULessonGrade> getAllGradesByLessonId(Long lessonId);
 	
-	public List<NWULessonGrade> getAllGradesbyNwuNumber(int nuwNumber);
+	public List<NWULessonGrade> getAllGradesbyNwuNumber(Integer nwuNumber);
 
 }

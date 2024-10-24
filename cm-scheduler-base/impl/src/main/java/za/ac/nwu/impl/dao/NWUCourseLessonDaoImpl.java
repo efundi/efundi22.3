@@ -70,5 +70,4 @@ public class NWUCourseLessonDaoImpl extends HibernateDaoSupport implements NWUCo
 
 		return lessons;
 	}
-
 }

@@ -15,11 +15,11 @@ import za.ac.nwu.api.model.NWULessonGrade;
 public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULessonGradeDao {
 
 	@Override
-	public NWULessonGrade updateLessonGrade(NWULessonGrade lesson_grade) {
+	public NWULessonGrade updateLessonGrade(NWULessonGrade lessonGrade) {
 		Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
-		session.saveOrUpdate(lesson_grade);
+		session.saveOrUpdate(lessonGrade);
 		session.flush();
-		return lesson_grade;
+		return lessonGrade;
 	}
 
 	@Override
@@ -46,11 +46,21 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 	}
 
 	@Override
-	public List<NWULessonGrade> getAllGradesByLessonId(long lesson_id) {
+	public NWULessonGrade getLessonGradeByLessonIdAndNwuNumber(Long lessonId, Integer nwuNumber) {
+		Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
+		Query q = session.createQuery("from NWULessonGrade c where c.lessonId=:lessonId and c.nwuNumber=:nwuNumber");
+		q.setParameter("lessonId", lessonId);
+		q.setParameter("nwuNumber", nwuNumber);
+		return (NWULessonGrade) q.uniqueResult();
+	}
+	
+	@Override
+	public List<NWULessonGrade> getAllGradesByLessonId(Long lessonId) {
 		List<NWULessonGrade> grades = new ArrayList<>();
 
 		HibernateCallback<List<NWULessonGrade>> hcb = session -> {
 			Query q = session.createQuery("SELECT c FROM NWULessonGrade c WHERE c.lessonId = :lessonId");
+			q.setParameter("lessonId", lessonId);
 			return q.list();
 		};
 
@@ -58,15 +68,15 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 
 		return grades;
 	}
-
+	
 	@Override
-
-	public List<NWULessonGrade> getAllGradesbyNwuNumber(int nuwNumber) {
+	public List<NWULessonGrade> getAllGradesbyNwuNumber(Integer nwuNumber) {
 
 		List<NWULessonGrade> grades = new ArrayList<>();
 
 		HibernateCallback<List<NWULessonGrade>> hcb = session -> {
 			Query q = session.getNamedQuery("FindAllGradesbyNwuNumber");
+			q.setParameter("nwuNumber", nwuNumber);
 			return q.list();
 		};
 

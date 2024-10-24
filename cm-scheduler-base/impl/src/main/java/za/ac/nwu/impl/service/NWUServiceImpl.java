@@ -359,7 +359,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					if (lecturers != null && !lecturers.isEmpty()) {
 						courseManager.updateCourseLecturers(course);
 					} else {
-						log.info("No lecturers found ");
+						log.info("No lecturers found: " + course);
 					}
 				}
 
@@ -416,7 +416,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					if (lessons != null && !lessons.isEmpty()) {
 						lessonManager.updateCourseLessonPlan(getLessonDao(), course, lessons);
 					} else {
-						log.info("No Lesson plans found ");
+						log.info("No Lesson plans found: " + course);
 					}
 				}
 
@@ -452,7 +452,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 			try {
 
-				loginToSakai();
+//				loginToSakai();
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
@@ -469,13 +469,11 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					// Manage Course Lesson plans
 //					List<NWUGBLesson> lessons = getLessonDao().getLessonsByCourseIdAndDate(course.getId(),
 //							previousFireTime);
-					List<NWUGBLesson> lessons = course.getLessons();
 
-					//TODO this must change, must implement correctly
-					if (lessons != null && !lessons.isEmpty()) {
-						lessonManager.updateLessonPlanStudentGrades(getLessonGradeDao(), course, lessons);
+					if (course.getLessons() != null && !course.getLessons().isEmpty()) {
+						lessonManager.updateLessonPlanStudentGrades(getLessonGradeDao(), course);
 					} else {
-						log.info("No Lesson plans found ");
+						log.info("No Lesson plans found: " + course);
 					}
 				}
 
@@ -485,7 +483,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				throw new JobExecutionException("updateNWUCourseLessonPlans failed: " + e.getMessage());
 			} finally {
 //				securityService.popAdvisor(yesMan);
-				logoutFromSakai();
+//				logoutFromSakai();
 			}
 		}
 	}
