@@ -452,7 +452,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 			try {
 
-//				loginToSakai();
+				loginToSakai();
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
@@ -471,7 +471,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //							previousFireTime);
 
 					if (course.getLessons() != null && !course.getLessons().isEmpty()) {
-						lessonManager.updateLessonPlanStudentGrades(getLessonGradeDao(), course);
+						lessonManager.updateLessonPlanStudentGrades(getLessonGradeDao(), course, previousFireTime);
 					} else {
 						log.info("No Lesson plans found: " + course);
 					}
@@ -483,7 +483,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				throw new JobExecutionException("updateNWUCourseLessonPlans failed: " + e.getMessage());
 			} finally {
 //				securityService.popAdvisor(yesMan);
-//				logoutFromSakai();
+				logoutFromSakai();
 			}
 		}
 	}

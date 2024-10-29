@@ -31,7 +31,7 @@ CREATE TABLE `gb_lesson_plan` (
   `course_id`int(11) NOT NULL,
   `class_test_number` int(3) NOT NULL,
   `class_test_code` varchar(16) NOT NULL,
-  `class_test_name` varchar(80) NULL,
+  `class_test_name` varchar(80) NOT NULL,
   `class_test_max_score` DOUBLE(3,0) NOT NULL,
   `efundi_gradebook_id` bigint(20) NULL,
   `audit_date_time` DATETIME NOT NULL,
