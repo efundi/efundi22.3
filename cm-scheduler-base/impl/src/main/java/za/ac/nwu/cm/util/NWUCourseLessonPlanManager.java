@@ -6,13 +6,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.section.api.SectionManager;
+import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
+import org.sakaiproject.service.gradebook.shared.AssessmentNotFoundException;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameException;
 import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.gradebook.Gradebook;
-import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
@@ -22,7 +24,6 @@ import za.ac.nwu.api.dao.NWULessonGradeDao;
 import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWUGBLesson;
 import za.ac.nwu.api.model.NWULessonGrade;
-import za.ac.nwu.api.model.NWUStudentEnrollment;
 
 /**
  * This class manages Lessons in Gradebook for courses.
@@ -41,14 +42,17 @@ public class NWUCourseLessonPlanManager {
 
 	private GradebookService gradebookService;
 
+	private SectionManager sectionManager;
+
 	public NWUCourseLessonPlanManager(final UserDirectoryService userDirectoryService,
 			final ServerConfigurationService serverConfigurationService, final SiteService siteService,
-			final GradebookService gradebookService) {
+			final GradebookService gradebookService, final SectionManager sectionManager) {
 
 		this.userDirectoryService = userDirectoryService;
 		this.serverConfigurationService = serverConfigurationService;
 		this.siteService = siteService;
 		this.gradebookService = gradebookService;
+		this.sectionManager = sectionManager;
 	}
 
 	/**
@@ -56,42 +60,69 @@ public class NWUCourseLessonPlanManager {
 	 * 
 	 * @param lessonDao
 	 * @param course
-	 * @param lessons
+	 * @param previousFireTime
 	 */
-	public void updateCourseLessonPlan(NWUCourseLessonDao lessonDao, NWUCourse course, List<NWUGBLesson> lessons) {
+	public void updateCourseLessonPlan(NWUCourseLessonDao lessonDao, NWUCourse course, Date previousFireTime) {
 
 		Assignment assignment = null;
 		String assignmentName = null;
-		for (NWUGBLesson lesson : lessons) {
+		for (NWUGBLesson lesson : course.getLessons()) {			
+
+//			if (previousFireTime != null && !lesson.getAuditDateTime().isAfter(previousFireTime.toInstant())) {
+//				continue;
+//			}
 
 			if (lesson.getEfundiGradebookId() != null) {
-
-				assignment = gradebookService.getAssignmentByID(lesson.getEfundiGradebookId());
-				assignmentName = getAssignmentName(lesson.getClassTestName(), lesson.getClassTestCode());
-				
-				if (assignment != null && !assignmentName.equals(assignment.getName())) {
-					assignment.setName(assignmentName);
-					gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
-				}
-
-			} else {
 				try {
-					assignment = new Assignment();
-					assignment.setName(getAssignmentName(lesson.getClassTestName(), lesson.getClassTestCode()));//classTestName-(classTestCode)
-					assignment.setPoints(lesson.getClassTestMaxScore());
-					assignment.setReleased(false);
-					Long assignmentId = gradebookService.addAssignment(course.getEfundiSiteId(), assignment);
-					lesson.setEfundiGradebookId(assignmentId);
-					lessonDao.updateLesson(lesson);
+					assignment = gradebookService.getAssignmentByIDEvenIfRemoved(lesson.getEfundiGradebookId());
+					
+					if (assignment.isRemoved()) {
+						gradebookService.restoreAssignment(assignment.getId());
+					}
+					
+					assignmentName = getAssignmentName(lesson.getClassTestName(), lesson.getClassTestCode());
 
-					log.info("Gradebook item created for Lesson plan: " + lesson);
+					if (!assignmentName.equals(assignment.getName())) {
+						assignment.setName(assignmentName);
+						gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+					}
+				} catch (AssessmentNotFoundException anf) {
 
-				} catch (ConflictingAssignmentNameException cane) {
-					// Don't know why this can happen. Transaction related, perhaps. Not
-					// that important, anyway.
-					log.warn("Failed to set gb item name to: ", getAssignmentName(lesson.getClassTestName(), lesson.getClassTestCode()));
+					// If a user deleted a Gradebook item but the lesson plan table has already been
+					// updated with the efundiGradebookId, a new one must be created
+					createNewAssignment(lessonDao, course, lesson);
 				}
+			} else {
+				createNewAssignment(lessonDao, course, lesson);
 			}
+		}
+	}
+
+	/**
+	 * Creates a new Assignment
+	 * 
+	 * @param lessonDao
+	 * @param course
+	 * @param lesson
+	 */
+	private void createNewAssignment(NWUCourseLessonDao lessonDao, NWUCourse course, NWUGBLesson lesson) {
+		Assignment assignment;
+		try {
+			assignment = new Assignment();
+			assignment.setName(getAssignmentName(lesson.getClassTestName(), lesson.getClassTestCode()));// classTestName-(classTestCode)
+			assignment.setPoints(lesson.getClassTestMaxScore());
+			assignment.setReleased(false);
+			Long assignmentId = gradebookService.addAssignment(course.getEfundiSiteId(), assignment);
+			lesson.setEfundiGradebookId(assignmentId);
+			lessonDao.updateLesson(lesson);
+
+			log.info("Gradebook item created for Lesson plan: " + lesson);
+
+		} catch (ConflictingAssignmentNameException cane) {
+			// Don't know why this can happen. Transaction related, perhaps. Not
+			// that important, anyway.
+			log.warn("Failed to set gb item name to: ",
+					getAssignmentName(lesson.getClassTestName(), lesson.getClassTestCode()));
 		}
 	}
 
@@ -118,20 +149,27 @@ public class NWUCourseLessonPlanManager {
 
 		Gradebook gradebook = (Gradebook) gradebookService.getGradebook(course.getEfundiSiteId());
 		List<Assignment> assignments = gradebookService.getAssignments(gradebook.getUid());
+		List<EnrollmentRecord> siteEnrollments = sectionManager.getSiteEnrollments(course.getEfundiSiteId());
+
+		log.info("Enrollment list for SiteId = " + course.getEfundiSiteId() + "; StudentUserIds = "
+				+ getStudentUserIds(siteEnrollments));
 
 		Long lessonId = null;
 		for (Assignment assignment : assignments) {
 
-			List<GradeDefinition> gradesForStudentsList = gradebookService
-					.getGradesForStudentsForItem(gradebook.getUid(), assignment.getId(), getStudentUuidsList(course));
-			log.info("Student grades list: gradebook.getUid() = " + gradebook.getUid() + "; assignment.getId() = "
-					+ assignment.getId() + gradesForStudentsList);
-
 			lessonId = getLessonId(course, assignment.getId());
 			if (lessonId == null) {
-				log.error("Could not find lessonId for GradebookId " + assignment.getId() + ": " + course);
+				log.error("Could not find lessonId for GradebookId " + assignment.getId() + " : " + course);
 				continue;
 			}
+			
+			List<GradeDefinition> gradesForStudentsList = gradebookService
+					.getGradesForStudentsForItem(gradebook.getUid(), assignment.getId(), getStudentUuidsList(siteEnrollments));
+			
+			int gradesCount = gradesForStudentsList == null ? 0 : gradesForStudentsList.size();
+			log.info("Student grades list: gradebook.getUid() = " + gradebook.getUid() + "; assignment.getId() = "
+					+ assignment.getId() + "; found " + gradesCount + " grades");
+
 			List<NWULessonGrade> lessonGrades = lessonGradeDao.getAllGradesByLessonId(lessonId);
 			if (lessonGrades.isEmpty() && !gradesForStudentsList.isEmpty()) {
 				log.info("No Grades found for LessonId: " + lessonId);
@@ -140,7 +178,7 @@ public class NWUCourseLessonPlanManager {
 				String nwuNumber = null;
 				for (GradeDefinition gradeDefinition : gradesForStudentsList) {
 
-					nwuNumber = getStudentEid(gradeDefinition.getStudentUid());
+					nwuNumber = getValidStudentEid(gradeDefinition.getStudentUid());
 					if (nwuNumber == null) {
 						log.error("Could not find user " + gradeDefinition.getStudentUid() + ": " + course);
 						continue;
@@ -160,7 +198,7 @@ public class NWUCourseLessonPlanManager {
 
 				for (GradeDefinition gradeDefinition : gradesForStudentsList) {
 
-					nwuNumber = getStudentEid(gradeDefinition.getStudentUid());
+					nwuNumber = getValidStudentEid(gradeDefinition.getStudentUid());
 					if (nwuNumber == null) {
 						log.error("Could not find user " + gradeDefinition.getStudentUid() + ": " + course);
 						continue;
@@ -201,7 +239,7 @@ public class NWUCourseLessonPlanManager {
 	private NWULessonGrade getLessonGradeForStudent(List<NWULessonGrade> lessonGrades, String nwuNumber) {
 
 		for (NWULessonGrade lessonGrade : lessonGrades) {
-			if (nwuNumber.equals("" + lessonGrade.getNwuNumber())) {
+			if (nwuNumber.equals(Integer.toString(lessonGrade.getNwuNumber()))) {
 				return lessonGrade;
 			}
 		}
@@ -226,12 +264,12 @@ public class NWUCourseLessonPlanManager {
 	}
 
 	/**
-	 * Returns the user Eid
+	 * Returns a valid user Eid
 	 * 
 	 * @param userId
 	 * @return
 	 */
-	private String getStudentEid(String userId) {
+	private String getValidStudentEid(String userId) {
 		try {
 			return userDirectoryService.getUserEid(userId);
 		} catch (UserNotDefinedException e) {
@@ -243,23 +281,31 @@ public class NWUCourseLessonPlanManager {
 	/**
 	 * Returns a list of student numbers
 	 * 
-	 * @param course
+	 * @param enrollments
 	 * @return
 	 */
-	private List<String> getStudentUuidsList(NWUCourse course) {
+	private List<String> getStudentUuidsList(List<EnrollmentRecord> enrollments) {
 
-		List<String> studentNumberList = new ArrayList<String>();
-		for (NWUStudentEnrollment student : course.getStudents()) {
-			User user = null;
-			try {
-				user = userDirectoryService.getUserByEid("" + student.getNwuNumber());
-				studentNumberList.add(user.getId());
-
-				log.info("Found User with eid = " + student.getNwuNumber() + "; Id = " + user.getId());
-			} catch (UserNotDefinedException e) {
-				log.error("User with eid " + student.getNwuNumber() + " not found: " + e.toString());
-			}
+		List<String> studentNumberList = new ArrayList<String>();	
+		for (EnrollmentRecord enrollment : enrollments) {
+			studentNumberList.add(enrollment.getUser().getUserUid());
 		}
 		return studentNumberList;
+	}
+	
+	/**
+	 * Return a String with with all enrollment Ids
+	 * 
+	 * @param enrollments
+	 * @return
+	 */
+	private String getStudentUserIds(List<EnrollmentRecord> enrollments) {
+
+		List<String> studentNumberList = new ArrayList<String>();
+		for (EnrollmentRecord enrollment : enrollments) {
+			studentNumberList.add(enrollment.getUser().getDisplayId());
+		}
+
+		return String.join(",", studentNumberList);
 	}
 }

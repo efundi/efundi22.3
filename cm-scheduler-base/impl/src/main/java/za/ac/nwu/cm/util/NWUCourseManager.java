@@ -1,6 +1,7 @@
 package za.ac.nwu.cm.util;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -107,14 +108,14 @@ public class NWUCourseManager {
             LDAPRetrieval ldap = Utility.getLDAPRetrieval(serverConfigurationService);
             try {
             	Set<RosterUser> lecturers = new HashSet<RosterUser>();
-            	lecturers.add(new RosterUser("" + course.getLecturer().getInstructorNumber()));            	
+            	lecturers.add(new RosterUser(Integer.toString(course.getLecturer().getInstructorNumber())));            	
                 ldap.setLecturerDetails(lecturers);
                 createLecturerSakaiUsers(lecturers);           
                 
                 Set<RosterUser> students = new HashSet<RosterUser>();
                 if (students != null && !students.isEmpty()) {
                 	for (NWUStudentEnrollment student : course.getStudents()) {
-                        students.add(new RosterUser("" + student.getNwuNumber()));
+                        students.add(new RosterUser(Integer.toString(student.getNwuNumber())));
                     }
                     ldap.setStudentDetails(students);
                     createStudentSakaiUsers(students);
@@ -138,24 +139,12 @@ public class NWUCourseManager {
 	 * Create the AcademicSession and set it active/current
 	 */
 	private AcademicSession createAcademicSession(NWUCourse course) {
-
-//        Calendar start = Calendar.getInstance();
-//        start.set(year, Calendar.JANUARY, 1);
-//        Calendar end = Calendar.getInstance();
-//        end.set(year, Calendar.DECEMBER, 31);
-//        String title = MessageFormat.format(serverConfigurationService.getString(
-//            "nwu.cm.AcademicSession.title", "Year {0,number,####}"), year);
-//        String description = MessageFormat.format(serverConfigurationService.getString(
-//            "nwu.cm.AcademicSession.description", "Academic Session for Year {0,number,####}"),
-//            year);
 		AcademicSession academicSession = null;
 		try {
 			academicSession = cmService.getAcademicSession(course.getTerm());
 			log.info("Retrieved AcademicSession with id " + course.getTerm());
 		} catch (IdNotFoundException e) {
 			// If AcademicSession do not exist, create it.
-//            academicSession = cmAdmin.createAcademicSession(course.getTerm(), course.getTerm(), description,
-//                start.getTime(), end.getTime());
 			academicSession = cmAdmin.createAcademicSession(course.getTerm(), course.getTerm(),
 					"Academic Session for " + course.getTerm(), null, null);
 			log.info("Created AcademicSession with id " + course.getTerm());
@@ -268,11 +257,11 @@ public class NWUCourseManager {
 
 		String courseOfferingReference = Utility.getCourseOfferingReference(course);
 		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);
-
+		
 		if (!cmService.isEnrollmentSetDefined(enrollmentSetReference)) {
 
 			Set<String> lecturerUserNames = new HashSet<String>();
-			lecturerUserNames.add("" + course.getLecturer().getInstructorNumber());
+			lecturerUserNames.add(Integer.toString(course.getLecturer().getInstructorNumber()));
 
 			cmAdmin.createEnrollmentSet(enrollmentSetReference, enrollmentSetReference, enrollmentSetReference,
 					enrollmentSetCategory, enrollmentSetCredits, courseOfferingReference, lecturerUserNames);
@@ -281,12 +270,18 @@ public class NWUCourseManager {
 		}
 	}
 
-
     /**
      * Only students should have Enrollments. Lecturers are added to the EnrollmentSet.
      */
     private void createEnrollment(final String enrollmentSetId, final NWUCourse course) {
+		String nwuNumber = null;
         for (String studentUserName : Utility.getStudentUserNames(course)) {
+			nwuNumber = Utility.getValidUserEid(userDirectoryService, studentUserName);
+			if (nwuNumber == null) {
+				log.error("Could not find student user " + nwuNumber + " to add to enrollment for course: " + course);
+				continue;
+			}
+        	
             cmAdmin.addOrUpdateEnrollment(studentUserName, enrollmentSetId, enrollmentStatus,
                 enrollmentCredits, gradingScheme);
             log.info("Added/Updated Enrollment for user id " + studentUserName);
@@ -295,8 +290,11 @@ public class NWUCourseManager {
 
 	/**
 	 * Only students should have Enrollments. Lecturers are added to the EnrollmentSet.
+	 * 
+	 * @param course
+	 * @param previousFireTime
 	 */
-	public void updateCourseEnrollment(NWUCourse course, List<NWUStudentEnrollment> enrollmentList) {
+	public void updateCourseEnrollment(NWUCourse course, Date previousFireTime) {
 
 		String courseOfferingReference = Utility.getCourseOfferingReference(course);
 		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);		
@@ -305,29 +303,41 @@ public class NWUCourseManager {
         log.info("updateCourseEnrollment.enrollmentSetReference " + enrollmentSetReference);
 
 		Set<RosterUser> students = new HashSet<RosterUser>();
-		for (Iterator iterator = enrollmentList.iterator(); iterator.hasNext();) {
+		String nwuNumber = null;
+		for (Iterator iterator = course.getStudents().iterator(); iterator.hasNext();) {
 			NWUStudentEnrollment studentEnrollment = (NWUStudentEnrollment) iterator.next();
+			
+			nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(studentEnrollment.getNwuNumber()));
+			if (nwuNumber == null) {
+				log.error("Could not find student user " + nwuNumber + " for course: " + course);
+				continue;
+			}
+			
+			if (previousFireTime != null && !studentEnrollment.getAuditDateTime().isAfter(previousFireTime.toInstant())) {
+				continue;
+			}
+			
 			if (studentEnrollment.getCourseStatus().equals(SCHEDULED)) {
 				// Enrollment
-				cmAdmin.addOrUpdateEnrollment("" + studentEnrollment.getNwuNumber(), enrollmentSetReference,
+				cmAdmin.addOrUpdateEnrollment(nwuNumber, enrollmentSetReference,
 						enrollmentStatus, enrollmentCredits, gradingScheme);
-				log.info("Added Enrollment for user id " + studentEnrollment.getNwuNumber());
+				log.info("Added Enrollment for user id " + nwuNumber);
 				// Section Memberships
-				cmAdmin.addOrUpdateSectionMembership("" + studentEnrollment.getNwuNumber(), sectionStudentRole,
+				cmAdmin.addOrUpdateSectionMembership(nwuNumber, sectionStudentRole,
 						courseOfferingReference, sectionStatus);
-				log.info("Added SectionMembership - " + studentEnrollment.getNwuNumber() + " to "
+				log.info("Added SectionMembership - " + nwuNumber + " to "
 						+ courseOfferingReference);
 				
-				students.add(new RosterUser("" + studentEnrollment.getNwuNumber()));
+				students.add(new RosterUser(nwuNumber));
 			}
 			if (studentEnrollment.getCourseStatus().equals(DROPPED) || studentEnrollment.getCourseStatus().equals(FUTURE)) {
 				// Section Memberships
-				cmAdmin.removeSectionMembership("" + studentEnrollment.getNwuNumber(), courseOfferingReference);
+				cmAdmin.removeSectionMembership(nwuNumber, courseOfferingReference);
 				log.info("Removed Student Membership from Section: " + studentEnrollment.getNwuNumber() + " - "
 						+ courseOfferingReference);
 				// Enrollment
-				cmAdmin.removeEnrollment("" + studentEnrollment.getNwuNumber(), enrollmentSetReference);
-				log.info("Removed Student from Enrollment: " + studentEnrollment.getNwuNumber() + " - " + enrollmentSetReference);
+				cmAdmin.removeEnrollment(nwuNumber, enrollmentSetReference);
+				log.info("Removed Student from Enrollment: " + nwuNumber + " - " + enrollmentSetReference);
 			}
 		}		
 
@@ -353,8 +363,11 @@ public class NWUCourseManager {
 
 	/**
 	 * Updating Lecturers data for courses
+	 * 
+	 * @param course
+	 * @param previousFireTime
 	 */
-	public void updateCourseLecturers(NWUCourse course) {
+	public void updateCourseLecturers(NWUCourse course, Date previousFireTime) {
 		
 		String enrollmentSetReference = Utility.getEnrollmentSetReference(course);
 
@@ -368,16 +381,17 @@ public class NWUCourseManager {
     		
 //            Set<String> lecturerUserNames = new HashSet<String>();
 			NWULecturer lecturer = course.getLecturer();
-			if (lecturer != null && !instructors.contains("" + lecturer.getInstructorNumber())) {
-				
+			if (lecturer != null && (previousFireTime == null || (previousFireTime != null && lecturer.getAuditDateTime().isAfter(previousFireTime.toInstant()))) && !instructors.contains("" + lecturer.getInstructorNumber())) {
+						
 				List<String> oldInstructors = new ArrayList<String>(instructors); 
 				try {
 		    		log.info("updateCourseLecturers.siteService.getSite " + course.getEfundiSiteId());
-		    		
+		            
+					User user = userDirectoryService.getUserByEid(Integer.toString(course.getLecturer().getInstructorNumber()));				
 					Site site = siteService.getSite(course.getEfundiSiteId());
 		    		
 					instructors.clear();
-					instructors.add("" + lecturer.getInstructorNumber());				
+					instructors.add(Integer.toString(lecturer.getInstructorNumber()));				
 
 		            enrollmentSet.setOfficialInstructors(instructors);
 		            cmAdmin.updateEnrollmentSet(enrollmentSet);
@@ -387,14 +401,12 @@ public class NWUCourseManager {
 		                    + enrollmentSetReference);
 					
 		            // add new lecturer user as the maintainer
-		            site.addMember("" + course.getLecturer().getInstructorNumber(), site.getMaintainRole(), true, false);
+		            site.addMember(Integer.toString(course.getLecturer().getInstructorNumber()), site.getMaintainRole(), true, false);
 		    		log.info("updateCourseLecturers.site.addMember " + course.getLecturer().getInstructorNumber());
 					
 		            // remove old instructor
 		            site.removeMember(oldInstructors.get(0));
 		            log.info("updateCourseLecturers.site.removeMember " + oldInstructors.get(0));
-		            
-					User user = userDirectoryService.getUserByEid("" + course.getLecturer().getInstructorNumber());
 
 					ResourcePropertiesEdit propEdit = site.getPropertiesEdit();
 					propEdit.addProperty(Site.PROP_SITE_CONTACT_NAME, user.getDisplayName());
@@ -405,18 +417,19 @@ public class NWUCourseManager {
 					siteService.save(site);					
 					
 				} catch (IdUnusedException e1) {
-                    log.error("Could not find Site for Id: " + course.getEfundiSiteId());
+					log.error("Could update lecturer for course : " + course);
 				} catch (UserNotDefinedException e) {
+					log.error("Could update lecturer for course : " + course);
                     log.error("Could not find User for Id: " + course.getLecturer().getInstructorNumber());
 				} catch (PermissionException e) {
-                    log.error("Could save Site with Id: " + course.getEfundiSiteId());
+					log.error("Could update lecturer for course : " + course);
 				}
 	            
 	            if (serverConfigurationService.getBoolean("nwu.cm.users.create", false)) {
 	                LDAPRetrieval ldap = Utility.getLDAPRetrieval(serverConfigurationService);
 	                try {
 	                	Set<RosterUser> rosterUsers = new HashSet<RosterUser>();
-	                	rosterUsers.add(new RosterUser("" + lecturer.getInstructorNumber()));            	
+	                	rosterUsers.add(new RosterUser(Integer.toString(lecturer.getInstructorNumber())));            	
 	                    ldap.setLecturerDetails(rosterUsers);
 	                    createLecturerSakaiUsers(rosterUsers);
 	                }
@@ -462,8 +475,15 @@ public class NWUCourseManager {
 		String courseOfferingReference = Utility.getCourseOfferingReference(course);
 
 		// Students
+		String nwuNumber = null;
         for (NWUStudentEnrollment student : course.getStudents()) {
-            cmAdmin.addOrUpdateSectionMembership("" + student.getNwuNumber(), sectionStudentRole,
+        	
+        	nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(student.getNwuNumber()));
+			if (nwuNumber == null) {
+				log.error("Could not find student user " + nwuNumber + " for course: " + course);
+				continue;
+			}
+            cmAdmin.addOrUpdateSectionMembership(Integer.toString(student.getNwuNumber()), sectionStudentRole,
             		courseOfferingReference, sectionStatus);
             log.info("Added/Updated SectionMembership - "
                     + student.getNwuNumber()
@@ -500,6 +520,10 @@ public class NWUCourseManager {
         }
     }
 
+    /**
+     * 
+     * @param students
+     */
     private void createStudentSakaiUsers(Set<RosterUser> students) {
         try {
             for (RosterUser student : students) {

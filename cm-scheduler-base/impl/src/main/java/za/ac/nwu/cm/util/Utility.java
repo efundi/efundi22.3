@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.user.api.UserDirectoryService;
+import org.sakaiproject.user.api.UserNotDefinedException;
 
 import lombok.extern.slf4j.Slf4j;
 import za.ac.nwu.api.model.NWUCourse;
@@ -82,7 +84,7 @@ public class Utility {
     public static Set<String> getStudentUserNames(final NWUCourse course) {
         Set<String> studentUserNames = new HashSet<String>();
         for (NWUStudentEnrollment student : course.getStudents()) {
-            studentUserNames.add("" + student.getNwuNumber());
+            studentUserNames.add(Integer.toString(student.getNwuNumber()));
         }
         return studentUserNames;
     }
@@ -137,5 +139,20 @@ public class Utility {
 			log.info("NWULesson: " + lesson);
 						
 		}
+	}
+
+	/**
+	 * Returns the user Eid
+	 * 
+	 * @param userEid
+	 * @return
+	 */
+	public static String getValidUserEid(UserDirectoryService userDirectoryService, String userEid) {
+		try {
+			return userDirectoryService.getUserId(userEid);
+		} catch (UserNotDefinedException e) {
+			log.error("User with eid " + userEid + " not found: " + e.toString());
+		}
+		return null;
 	}
 }

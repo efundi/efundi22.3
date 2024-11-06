@@ -238,6 +238,8 @@
 			ref="org.sakaiproject.id.api.IdManager" />
 		<property name="gradebookService"
 			ref="org.sakaiproject.service.gradebook.GradebookService" />
+		<property name="sectionManager"
+			ref="org.sakaiproject.section.api.SectionManager" />			 
 	</bean>
 
 </beans>

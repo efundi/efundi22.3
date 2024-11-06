@@ -16,9 +16,11 @@ import org.sakaiproject.coursemanagement.api.CourseManagementAdministration;
 import org.sakaiproject.coursemanagement.api.CourseManagementService;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdInvalidException;
+import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.id.api.IdManager;
+import org.sakaiproject.section.api.SectionManager;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
@@ -42,7 +44,6 @@ import za.ac.nwu.api.dao.NWUCourseLecturerDao;
 import za.ac.nwu.api.dao.NWUCourseLessonDao;
 import za.ac.nwu.api.dao.NWULessonGradeDao;
 import za.ac.nwu.api.model.NWUCourse;
-import za.ac.nwu.api.model.NWUGBLesson;
 import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
@@ -69,6 +70,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private CourseManagementAdministration cmAdmin;
 	private IdManager idManager;
 	private GradebookService gradebookService;
+	private SectionManager sectionManager;
 
 	private ApplicationContext applicationContext;
 
@@ -143,18 +145,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	 */
 	public void updateNWUCourseManagement() throws JobExecutionException {
 
-		// Get all existing course from Database for current
-
-//		Calendar cal = Calendar.getInstance();
-//		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
-//		year = year != 0 ? year : cal.get(Calendar.YEAR);
-//		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);// Also by Status, add Status column, if empty
-		// process, otherwise skip. after insert update
-		// to inserted or whatever. modifiedDate?
-
-		// Get all existing course from Database for current year and no Sakai site id
-//		List<NWUCourse> courses = courseDao.FindAllCoursesWithNoSiteId(Calendar.getInstance().get(Calendar.YEAR));
-
 		// Get all CM data with no Sakai site id
 		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteId();
 		if (courses.isEmpty()) {
@@ -180,11 +170,18 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService, siteService);
 
+				String nwuNumber = null;
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
 					if (lecturer == null) {
 						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+					
+					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
+					if (nwuNumber == null) {
+						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
 						continue;
 					}
 
@@ -211,9 +208,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	 */
 	public void updateNWUeFundiCourseSites() {
 
-		// Get all existing course from Database for current year and no Sakai site id
-//		List<NWUCourse> courses = courseDao.getAllCoursesByYearAndSiteId(Calendar.getInstance().get(Calendar.YEAR));
-
 		// Get all CM data with no Sakai site id
 		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteId();
 		if (!courses.isEmpty()) {
@@ -230,11 +224,18 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				loginToSakai();
 				securityService.pushAdvisor(yesMan);
 
+				String nwuNumber = null;
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
 					if (lecturer == null) {
 						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+					
+					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
+					if (nwuNumber == null) {
+						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
 						continue;
 					}
 
@@ -285,18 +286,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 				for (NWUCourse course : courses) {
 
-//					NWULecturer lecturer = course.getLecturer();
-//					if (lecturer == null) {
-//						log.error("Course must have an Instuctor: " + course);
-//						continue;
-//					}
-
-					// Manage Course Enrollment
-					List<NWUStudentEnrollment> enrollmentList = getEnrollmentDao()
-							.getEnrollmentsByCourseIdAndDate(course.getId(), previousFireTime);
+					List<NWUStudentEnrollment> enrollmentList = course.getStudents();
 
 					if (enrollmentList != null && !enrollmentList.isEmpty()) {
-						courseManager.updateCourseEnrollment(course, enrollmentList);
+						courseManager.updateCourseEnrollment(course, previousFireTime);
 					} else {
 						log.info("No students found ");
 					}
@@ -321,11 +314,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	 */
 	public void updateNWUCourseLecturers(Date previousFireTime) throws JobExecutionException {
 
-//		Calendar cal = Calendar.getInstance();
-//		int year = serverConfigurationService.getInt("nwu.cm.year", 0);
-//		year = year != 0 ? year : cal.get(Calendar.YEAR);
-//		List<NWUCourse> courses = courseDao.getAllCoursesByYear(year);
-
 		// Get all CM data with Sakai site id
 		List<NWUCourse> courses = getCourseDao().getAllCoursesWithSiteId();
 
@@ -345,6 +333,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService, siteService);
 
+				String nwuNumber = null;
 				for (NWUCourse course : courses) {
 
 					NWULecturer lecturer = course.getLecturer();
@@ -352,15 +341,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						log.error("Course must have an Instuctor: " + course);
 						continue;
 					}
-
-					// Manage Course Lecturers
-					List<NWULecturer> lecturers = getLecturerDao().getLecturersByCourseIdAndDate(course.getId(),
-							previousFireTime);
-					if (lecturers != null && !lecturers.isEmpty()) {
-						courseManager.updateCourseLecturers(course);
-					} else {
-						log.info("No lecturers found: " + course);
+					
+					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
+					if (nwuNumber == null) {
+						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
+						continue;
 					}
+					
+					courseManager.updateCourseLecturers(course, previousFireTime);
 				}
 
 			} catch (Exception e) {
@@ -399,25 +387,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
-						serverConfigurationService, siteService, gradebookService);
+						serverConfigurationService, siteService, gradebookService, sectionManager);
 
-				for (NWUCourse course : courses) {
-
-//					NWULecturer lecturer = course.getLecturer();
-//					if (lecturer == null) {
-//						log.error("Course must have an Instuctor: " + course);
-//						continue;
-//					}
-
-					// Manage Course Lesson plans
-					List<NWUGBLesson> lessons = getLessonDao().getLessonsByCourseIdAndDate(course.getId(),
-							previousFireTime);
-
-					if (lessons != null && !lessons.isEmpty()) {
-						lessonManager.updateCourseLessonPlan(getLessonDao(), course, lessons);
-					} else {
-						log.info("No Lesson plans found: " + course);
-					}
+				for (NWUCourse course : courses) {					
+					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime);
 				}
 
 			} catch (Exception e) {
@@ -445,7 +418,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		if (courses.isEmpty()) {
 			log.info("No courses found ");
 		}
-		if (!courses.isEmpty()) {
+		if (!courses.isEmpty()) {			
 
 			Utility.printCoursesInfo(courses);
 			log.info("Job PreviousFireTime: " + previousFireTime);
@@ -456,25 +429,23 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
-						serverConfigurationService, siteService, gradebookService);
+						serverConfigurationService, siteService, gradebookService, sectionManager);
 
+				Site site = null;
 				for (NWUCourse course : courses) {
+					try {
+						site = siteService.getSite(course.getEfundiSiteId());
+					} catch (IdUnusedException e1) {
+						log.info("Site not found for Id : " + course);
+						continue;
+					}
 
-//					NWULecturer lecturer = course.getLecturer();
-//					if (lecturer == null) {
-//						log.error("Course must have an Instuctor: " + course);
-//						continue;
-//					}
-
-					// Manage Course Lesson plans
-//					List<NWUGBLesson> lessons = getLessonDao().getLessonsByCourseIdAndDate(course.getId(),
-//							previousFireTime);
-
-					if (course.getLessons() != null && !course.getLessons().isEmpty()) {
+					if (site != null && site.isPublished() && course.getLessons() != null && !course.getLessons().isEmpty()) {
 						lessonManager.updateLessonPlanStudentGrades(getLessonGradeDao(), course, previousFireTime);
 					} else {
 						log.info("No Lesson plans found: " + course);
 					}
+					site = null;
 				}
 
 			} catch (Exception e) {
@@ -499,6 +470,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		log.info("NWU - Creating unpublished eFundi Course Site");
 		Site newSite = null;
 		try {
+			User user = userDirectoryService.getUserByEid(Integer.toString(course.getLecturer().getInstructorNumber()));
+			
 			String siteId = idManager.createUuid();
 			String description = course.getCourseDescr();
 			newSite = siteService.addSite(siteId, "course");
@@ -518,9 +491,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			propEdit.addProperty(Site.PROP_SITE_TERM_EID, termEid);
 
 			// add lecturer user as the maintainer
-			newSite.addMember("" + course.getLecturer().getInstructorNumber(), newSite.getMaintainRole(), true, false);
-
-			User user = userDirectoryService.getUserByEid("" + course.getLecturer().getInstructorNumber());
+			newSite.addMember(Integer.toString(course.getLecturer().getInstructorNumber()), newSite.getMaintainRole(), true, false);
 
 			propEdit.addProperty(Site.PROP_SITE_CONTACT_NAME, user.getDisplayName());
 			propEdit.addProperty(Site.PROP_SITE_CONTACT_EMAIL, user.getEmail());
@@ -541,10 +512,20 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			log.info("NWU - New Course site created: " + siteId);
 
 		} catch (IdInvalidException | PermissionException e) {
+			log.error("Could not create a site for : " + course);
 			log.error("createSakaiSite: " + e.getMessage(), e);
 		} catch (IdUsedException e) {
+			log.error("Could not create a site for : " + course);
 			log.error("createSakaiSite - IdUsedException: " + e.getId(), e);
+		} catch (UserNotDefinedException e) {
+			log.error("Could not create a site for : " + course);
+			log.error("UserNotDefinedException for lecturer: " + course.getLecturer().getInstructorNumber() + ", site could not be created. " + e.getMessage(), e);
+		} catch (IdUnusedException e) {
+			log.error("Could not create a site for : " + course);
+			log.error("createSakaiSite - IdUnusedException: " + e.getId(), e);
+			e.printStackTrace();
 		} catch (Exception e) {
+			log.error("Could not create a site for : " + course);
 			log.error("createSakaiSite: " + e.getMessage(), e);
 		}
 		return newSite;
@@ -775,5 +756,13 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setGradebookService(GradebookService gradebookService) {
 		this.gradebookService = gradebookService;
+	}
+
+	public SectionManager getSectionManager() {
+		return sectionManager;
+	}
+
+	public void setSectionManager(SectionManager sectionManager) {
+		this.sectionManager = sectionManager;
 	}
 }

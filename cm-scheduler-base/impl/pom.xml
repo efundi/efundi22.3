@@ -67,7 +67,12 @@
             <groupId>org.sakaiproject.edu-services.gradebook</groupId>
             <artifactId>gradebook-service-hibernate</artifactId>
         </dependency>
-
+        
+        <dependency>
+    		<groupId>org.sakaiproject.edu-services.sections</groupId>
+    		<artifactId>sections-api</artifactId>
+        </dependency>
+    
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
