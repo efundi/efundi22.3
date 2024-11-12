@@ -284,7 +284,19 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService, siteService);
 
+				String nwuNumber = null;
 				for (NWUCourse course : courses) {
+					
+					if (course.getLecturer() == null) {
+						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+					
+					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
+					if (nwuNumber == null) {
+						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
+						continue;
+					}
 
 					List<NWUStudentEnrollment> enrollmentList = course.getStudents();
 
@@ -389,7 +401,19 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
-				for (NWUCourse course : courses) {					
+				String nwuNumber = null;
+				for (NWUCourse course : courses) {
+					
+					if (course.getLecturer() == null) {
+						log.error("Course must have an Instuctor: " + course);
+						continue;
+					}
+					
+					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
+					if (nwuNumber == null) {
+						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
+						continue;
+					}		
 					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime);
 				}
 
