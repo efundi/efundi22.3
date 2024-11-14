@@ -6,29 +6,72 @@
 	<groupId>za.ac.nwu</groupId>
 	<artifactId>cm-scheduler-base</artifactId>
 
-	<version>1.0.7</version>
+	<version>2.0.0</version>
 	<packaging>pom</packaging>
-
+	
 	<parent>
-		<artifactId>base</artifactId>
 		<groupId>org.sakaiproject</groupId>
+		<artifactId>master</artifactId>
 		<version>22.3</version>
-		<relativePath>../pom.xml</relativePath>
+		<relativePath>../master</relativePath>
 	</parent>
-
-	<modules>
-		<module>pack</module>
-		<module>scheduler-jobs</module>
-	</modules>
-
+	
 	<!-- handles the management of all related dependencies -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>za.ac.nwu</groupId>
 				<artifactId>cm-scheduler-jobs</artifactId>
-				<version>1.0.7</version>
+				<version>2.0.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<showDeprecation>true</showDeprecation>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sakai.version>22.3</sakai.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>persistence-api</artifactId>
+			<version>1.0.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.common</groupId>
+			<artifactId>hibernate-commons-annotations</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-annotations</artifactId>
+			<version>3.5.6-Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	<modules>
+		<module>api</module>
+		<module>impl</module>
+	</modules>
+
 </project>

@@ -165,6 +165,10 @@ public class Assignment implements Serializable, Comparable<Assignment> {
 	@Setter
 	private String gradebookId;
 	
+	@Getter
+	@Setter
+	private boolean removed;
+	
 
 	@Override
 	public int compareTo(final Assignment o) {
@@ -190,5 +194,4 @@ public class Assignment implements Serializable, Comparable<Assignment> {
 				.append(this.id)
 				.toHashCode();
 	}
-
 }

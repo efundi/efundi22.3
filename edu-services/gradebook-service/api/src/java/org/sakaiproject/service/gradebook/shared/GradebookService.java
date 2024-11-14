@@ -223,6 +223,17 @@ public interface GradebookService extends EntityProducer {
 			throws AssessmentNotFoundException;
 
 	/**
+	 * Get an assignment based on its id
+	 *
+	 * @param gradebookUid
+	 * @param assignmentId
+	 * @return the associated Assignment with the given assignmentId
+	 * @throws AssessmentNotFoundException
+	 */
+	public Assignment getAssignmentByIDEvenIfRemoved(final Long gradeableObjectID)
+			throws AssessmentNotFoundException;
+	
+	/**
 	 * Get an assignment based on its name. This is provided for backward compatibility only.
 	 *
 	 * @param gradebookUid
@@ -345,6 +356,13 @@ public interface GradebookService extends EntityProducer {
 	 * @param assignmentId The assignment id
 	 */
 	public void removeAssignment(Long assignmentId) throws StaleObjectModificationException;
+
+	/**
+	 * Restores an assignment to a gradebook. 
+	 *
+	 * @param assignmentId The assignment id
+	 */
+	public void restoreAssignment(Long assignmentId) throws StaleObjectModificationException;
 
 	/**
 	 *
