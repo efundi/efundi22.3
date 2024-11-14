@@ -1,4 +1,4 @@
-# SIS Integration Sakai Collaboration and Learning Environment (Sakai CLE)
+# SIS Integration Sakai Collaboration and Learning Environment (Sakai CLE) v2
 
 This is the source code for the Sakai CLE.
 
