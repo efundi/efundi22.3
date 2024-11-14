@@ -231,6 +231,21 @@
                 </bean>
                 <bean parent="org.sakaiproject.ignite.cache.atomic">
                     <property name="name" value="org.sakaiproject.hbm.privacy.PrivacyRecord"/>
+                </bean>                
+                <bean parent="org.sakaiproject.ignite.cache.atomic">
+                    <property name="name" value="za.ac.nwu.api.model.NWUCourse"/>
+                </bean>
+                <bean parent="org.sakaiproject.ignite.cache.atomic">
+                    <property name="name" value="za.ac.nwu.api.model.NWUStudentEnrollment"/>
+                </bean>
+                <bean parent="org.sakaiproject.ignite.cache.atomic">
+                    <property name="name" value="za.ac.nwu.api.model.NWULecturer"/>
+                </bean>
+                <bean parent="org.sakaiproject.ignite.cache.atomic">
+                    <property name="name" value="za.ac.nwu.api.model.NWUGBLesson"/>
+                </bean>
+                <bean parent="org.sakaiproject.ignite.cache.atomic">
+                    <property name="name" value="za.ac.nwu.api.model.NWULessonGrade"/>
                 </bean>
             </list>
         </constructor-arg>
