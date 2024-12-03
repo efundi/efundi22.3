@@ -265,6 +265,28 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 		return getAssignmentDefinition(assignment);
 	}
 
+	
+	/**
+	 * Method to retrieve Assignment by ID.
+	 *
+	 * @param gradeableObjectID
+	 * @return
+	 */
+	public Assignment getAssignmentByIDEvenIfRemoved(final Long gradeableObjectID) throws AssessmentNotFoundException {
+		GradebookAssignment assignment = (GradebookAssignment) getHibernateTemplate().execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(final Session session) throws HibernateException {
+				return getAssignmentByIdEvenIfRemoved(gradeableObjectID);
+			}
+		});
+		
+		if (assignment == null) {
+			throw new AssessmentNotFoundException("No gradebook item exists with gradable object id = " + gradeableObjectID);
+		}
+		
+		return getAssignmentDefinition(assignment);
+	}
+
 	@Override
 	@Deprecated
 	public org.sakaiproject.service.gradebook.shared.Assignment getAssignment(final String gradebookUid, final String assignmentName)
@@ -354,6 +376,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
     	assignmentDefinition.setUngraded(internalAssignment.getUngraded());
     	assignmentDefinition.setSortOrder(internalAssignment.getSortOrder());
     	assignmentDefinition.setCategorizedSortOrder(internalAssignment.getCategorizedSortOrder());
+    	assignmentDefinition.setRemoved(internalAssignment.isRemoved());
 
     	return assignmentDefinition;
     }
@@ -685,6 +708,28 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 
 				if (log.isInfoEnabled()) {
 					log.info("GradebookAssignment " + asn.getName() + " has been removed from " + gradebook);
+				}
+				return null;
+			}
+		};
+		getHibernateTemplate().execute(hc);
+
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void restoreAssignment(final Long assignmentId) throws StaleObjectModificationException {
+
+		final HibernateCallback hc = new HibernateCallback() {
+			@Override
+			public Object doInHibernate(final Session session) throws HibernateException {
+				final GradebookAssignment asn = (GradebookAssignment) session.load(GradebookAssignment.class, assignmentId);
+				final Gradebook gradebook = asn.getGradebook();
+				asn.setRemoved(false);
+				session.update(asn);
+
+				if (log.isInfoEnabled()) {
+					log.info("GradebookAssignment " + asn.getName() + " has been restored to " + gradebook);
 				}
 				return null;
 			}
