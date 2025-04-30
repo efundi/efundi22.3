@@ -64,3 +64,21 @@ CREATE TABLE `gb_lesson_grades` (
   CONSTRAINT `fk_lg_course_id` FOREIGN KEY (`lesson_id`) REFERENCES `gb_lesson_plan` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `gb_exam_lesson` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `campus` varchar(8) NOT NULL,
+  `term` varchar(16) NOT NULL,
+  `course_code` varchar(12) NOT NULL,
+  `section_code` varchar(8) NOT NULL,
+  `exam_lesson_code` varchar(8) NOT NULL,
+  `exam_lesson_number` int(4) NOT NULL,
+  `exam_lesson_name` varchar(40) NULL,
+  `percentage` DOUBLE(6,3) NOT NULL,
+  `exam_lesson_max_score` DOUBLE(6,3) NOT NULL,
+  `action` varchar(6) NOT NULL,
+  `efundi_gradebook_id` bigint(20) NULL,
+  `audit_date_time` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gb_el_unique_index` (`campus`,`term`,`course_code`,`section_code`,`exam_lesson_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

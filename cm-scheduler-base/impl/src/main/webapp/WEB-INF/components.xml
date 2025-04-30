@@ -94,6 +94,23 @@
 		<property name="schedulerManager"
 			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
 	</bean>
+	
+	<!-- NWUExamLessonJob -->
+	<bean id="za.ac.nwu.cm.jobs.NWUExamLessonJob"
+		class="za.ac.nwu.cm.jobs.NWUExamLessonJob">
+		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
+		<property name="triggerEventManager"
+			ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager" />
+	</bean>
+	<bean
+		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUExamLessonJob"
+		class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
+		init-method="init">
+		<property name="beanId" value="za.ac.nwu.cm.jobs.NWUExamLessonJob" />
+		<property name="jobName" value="NWU Exam Lesson Job" />
+		<property name="schedulerManager"
+			ref="org.sakaiproject.api.app.scheduler.SchedulerManager" />
+	</bean>
 
 	<bean id="za.ac.nwu.api.dao.NWUCourseDao"
 		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
@@ -187,6 +204,25 @@
 		<property name="sessionFactory"
 			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
 	</bean>
+	
+	<bean id="za.ac.nwu.api.dao.NWUExamLessonDao"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager" />
+		<property name="target" ref="za.ac.nwu.impl.dao.NWUExamLessonDaoImpl" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean
+		id="za.ac.nwu.impl.dao.NWUExamLessonDaoImpl"
+		class="za.ac.nwu.impl.dao.NWUExamLessonDaoImpl">
+		<property name="sessionFactory"
+			ref="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
+	</bean>
 
 	<!--  Hibernate persistence -->
 
@@ -200,6 +236,7 @@
 				<value>za.ac.nwu.api.model.NWULecturer</value>
 				<value>za.ac.nwu.api.model.NWUGBLesson</value>
 				<value>za.ac.nwu.api.model.NWULessonGrade</value>
+				<value>za.ac.nwu.api.model.NWUGBExamLesson</value>
 			</list>
 		</property>
 	</bean>
@@ -218,6 +255,8 @@
 			ref="za.ac.nwu.api.dao.NWUCourseLessonDao" />
 		<property name="lessonGradeDao"
 			ref="za.ac.nwu.api.dao.NWULessonGradeDao" />
+		<property name="examLessonDao"
+			ref="za.ac.nwu.api.dao.NWUExamLessonDao" />			 
 		<property name="userDirectoryService"
 			ref="org.sakaiproject.user.api.UserDirectoryService" />
 		<property name="serverConfigurationService"
