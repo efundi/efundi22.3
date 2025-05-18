@@ -1,5 +1,6 @@
 package za.ac.nwu.impl.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,11 +43,13 @@ import za.ac.nwu.api.dao.NWUCourseDao;
 import za.ac.nwu.api.dao.NWUCourseEnrollmentDao;
 import za.ac.nwu.api.dao.NWUCourseLecturerDao;
 import za.ac.nwu.api.dao.NWUCourseLessonDao;
+import za.ac.nwu.api.dao.NWUExamLessonDao;
 import za.ac.nwu.api.dao.NWULessonGradeDao;
 import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
+import za.ac.nwu.cm.util.NWUCourseExamLessonManager;
 import za.ac.nwu.cm.util.NWUCourseLessonPlanManager;
 import za.ac.nwu.cm.util.NWUCourseManager;
 import za.ac.nwu.cm.util.Utility;
@@ -79,6 +82,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private NWUCourseLecturerDao lecturerDao;
 	private NWUCourseLessonDao lessonDao;
 	private NWULessonGradeDao lessonGradeDao;
+	private NWUExamLessonDao examLessonDao;
 
 	private static final String BLANK_SPACE = " ";
 	private static final String HYPHEN = "-";
@@ -483,6 +487,58 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		}
 	}
 
+
+	/**
+	 * Reads all Exam Lessons
+	 * 
+	 * @throws JobExecutionException
+	 * 
+	 */
+	public void updateNWUExamLessons(Date previousFireTime) throws JobExecutionException {
+		
+		// Get all CM data with Sakai site id
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithSiteId();
+
+		if (courses.isEmpty()) {
+			log.info("No courses found ");
+		}
+		if (!courses.isEmpty()) {			
+
+			Utility.printCoursesInfo(courses);
+			log.info("Job PreviousFireTime: " + previousFireTime);
+
+			try {
+
+				loginToSakai();
+//				securityService.pushAdvisor(yesMan);
+
+				NWUCourseExamLessonManager examLessonManager = new NWUCourseExamLessonManager(userDirectoryService,
+						serverConfigurationService, siteService, gradebookService, sectionManager);
+
+				Site site = null;
+				for (NWUCourse course : courses) {
+					try {
+						site = siteService.getSite(course.getEfundiSiteId());
+					} catch (IdUnusedException e1) {
+						log.info("Site not found for Id : " + course);
+						continue;
+					}
+
+					examLessonManager.updateExamLessonPlan(getExamLessonDao(), course, previousFireTime);
+					site = null;
+				}
+
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+
+				throw new JobExecutionException("updateNWUCourseLessonPlans failed: " + e.getMessage());
+			} finally {
+//				securityService.popAdvisor(yesMan);
+				logoutFromSakai();
+			}
+		}
+	}
+
 	/**
 	 * Create eFundi course site
 	 * 
@@ -531,6 +587,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			siteService.save(newSite);
 
 			course.setEfundiSiteId(newSite.getId());
+			course.setAuditDateTime(Instant.now());
 			courseDao.updateCourse(course);
 
 			log.info("NWU - New Course site created: " + siteId);
@@ -691,6 +748,14 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 	public void setLessonGradeDao(NWULessonGradeDao lessonGradeDao) {
 		this.lessonGradeDao = lessonGradeDao;
+	}
+
+	public NWUExamLessonDao getExamLessonDao() {
+		return examLessonDao;
+	}
+
+	public void setExamLessonDao(NWUExamLessonDao examLessonDao) {
+		this.examLessonDao = examLessonDao;
 	}
 
 	public UserDirectoryService getUserDirectoryService() {
