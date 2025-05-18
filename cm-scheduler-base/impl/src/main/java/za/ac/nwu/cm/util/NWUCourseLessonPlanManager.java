@@ -88,6 +88,13 @@ public class NWUCourseLessonPlanManager {
 						assignment.setName(assignmentName);
 						gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
 					}
+					assignmentName = null;
+					
+					if (!lesson.getClassTestMaxScore().equals(assignment.getPoints())) {
+						assignment.setPoints(lesson.getClassTestMaxScore());
+						gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+					}
+					
 				} catch (AssessmentNotFoundException anf) {
 
 					// If a user deleted a Gradebook item but the lesson plan table has already been
@@ -116,6 +123,7 @@ public class NWUCourseLessonPlanManager {
 			assignment.setReleased(false);
 			Long assignmentId = gradebookService.addAssignment(course.getEfundiSiteId(), assignment);
 			lesson.setEfundiGradebookId(assignmentId);
+			lesson.setAuditDateTime(Instant.now());		
 			lessonDao.updateLesson(lesson);
 
 			log.info("Gradebook item created for Lesson plan: " + lesson);
