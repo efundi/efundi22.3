@@ -34,9 +34,6 @@ import lombok.ToString;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 @NamedQueries({
-	@NamedQuery(name = "FindAllCoursesByYearAndSiteId", query = "SELECT c FROM NWUCourse c WHERE c.year = :year AND (c.efundiSiteId is null OR c.efundiSiteId = '')"),
-	@NamedQuery(name = "FindAllCoursesByYear", query = "SELECT c FROM NWUCourse c WHERE c.year = :year"),
-	@NamedQuery(name = "FindAllCoursesWithNoSiteId", query = "SELECT c FROM NWUCourse c WHERE c.efundiSiteId is null OR c.efundiSiteId = '' "),
 	@NamedQuery(name = "FindAllCoursesWithSiteId", query = "SELECT c FROM NWUCourse c WHERE c.efundiSiteId is not null AND c.efundiSiteId != '' ")})
 
 public class NWUCourse {
@@ -51,18 +48,8 @@ public class NWUCourse {
 	private String campus;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "enrolment_year", nullable = false)
-	private Integer year;
-
-	@EqualsAndHashCode.Include
 	@Column(name = "term", length = 16, nullable = false)
 	private String term;
-	
-	@Column(name = "term_start_date", nullable = false)
-	private LocalDate termStartDate;
-	
-	@Column(name = "term_end_date", nullable = true)
-	private LocalDate termEndDate;
 
 	@EqualsAndHashCode.Include
 	@Column(name = "course_code", length = 12, nullable = false)
@@ -81,9 +68,13 @@ public class NWUCourse {
 	@Column(name = "efundi_site_id", length = 99, nullable = true)
 	private String efundiSiteId;
 
+	@Column(name = "action", length = 20, nullable = false)
+	private String action;
+
     @Type(type = "org.hibernate.type.InstantType")
 	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
+       
     
     @OneToOne(mappedBy = "course")
     @ToString.Exclude private NWULecturer lecturer;
@@ -97,17 +88,15 @@ public class NWUCourse {
 	public NWUCourse() {
 	}
 
-	public NWUCourse(String campus, Integer year, String term, LocalDate termStartDate, LocalDate termEndDate, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, Instant auditDateTime) {
+	public NWUCourse(String campus, String term, LocalDate termStartDate, LocalDate termEndDate, String courseCode, String courseDescr, String sectionCode, String sectionDescr, String efundiSiteId, String action, Instant auditDateTime) {
 		this.campus = campus;
-		this.year = year;
 		this.term = term;
-		this.termStartDate = termStartDate;
-		this.termEndDate = termEndDate;
 		this.courseCode = courseCode;
 		this.courseDescr = courseDescr;
 		this.sectionCode = sectionCode;
 		this.sectionDescr = sectionDescr;
 		this.efundiSiteId = efundiSiteId;
+		this.action = action;
 		this.auditDateTime = auditDateTime;
 	}
 }
