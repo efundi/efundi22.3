@@ -44,8 +44,11 @@ public class NWUStudentEnrollment {
 	@Column(name = "course_status", length = 30, nullable = false)
 	private String courseStatus;
 
-	@Column(name = "faculty", length = 45, nullable = false)
-	private String faculty;
+	@Column(name = "program_version_code", length = 25, nullable = false)
+	private String programVersionCode;
+	
+	@Column(name = "controlNote", length = 20, nullable = false)
+	private String controlNote;
 
     @Type(type = "org.hibernate.type.InstantType")
 	@Column(name = "audit_date_time", nullable = true)
@@ -63,7 +66,7 @@ public class NWUStudentEnrollment {
 		this.courseId = courseId;
 		this.nwuNumber = nwuNumber;
 		this.courseStatus = courseStatus;
-		this.faculty = faculty;
+		this.programVersionCode = programVersionCode;
 		this.auditDateTime = auditDateTime;
 	}
 }

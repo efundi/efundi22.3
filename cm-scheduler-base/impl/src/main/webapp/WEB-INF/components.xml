@@ -12,6 +12,8 @@
 	<bean id="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob"
 		class="za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob">
 		<property name="service" ref="za.ac.nwu.api.service.NWUService" />
+		<property name="triggerEventManager"
+			ref="org.sakaiproject.api.app.scheduler.events.TriggerEventManager" />
 	</bean>
 	<bean
 		id="org.sakaiproject.api.app.scheduler.JobBeanWrapper.za.ac.nwu.cm.jobs.NWUCourseManagementUpdateJob"
