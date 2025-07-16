@@ -189,9 +189,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						createEFundiCourseSite(course);
 					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
 
-						if(!isSiteActiveForCourse(course)) {
-							continue;
-						}
+
 						courseManager.updateCourseLecturers(course, previousFireTime);
 						
 						// Update Course Sites
@@ -247,9 +245,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						createEFundiCourseSite(course);
 					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
 
-						if(!isSiteActiveForCourse(course)) {
-							continue;
-						}
+
 						courseManager.updateCourseLecturers(course, previousFireTime);
 						// Update Course Sites
 						updateEFundiCourseSite(course);
@@ -306,10 +302,12 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 //				String nwuNumber = null;
 				for (NWUCourse course : courses) {
-					
-					if(!isSiteActiveForCourse(course)) {
-						continue;
-					}
+
+
+					Map<String, List<NWUStudentEnrollment>> resultMap = null;
+			        List<NWUStudentEnrollment> addedList = null;
+			        List<NWUStudentEnrollment> removedList = null;
+
 
 					Map<String, List<NWUStudentEnrollment>> resultMap = null;
 			        List<NWUStudentEnrollment> addedList = null;
@@ -370,10 +368,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						serverConfigurationService, siteService);
 
 				for (NWUCourse course : courses) {
-					
-					if(!isSiteActiveForCourse(course)) {
-						continue;
-					}
+
 					
 					courseManager.updateCourseLecturers(course, previousFireTime);
 				}
@@ -417,10 +412,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
 				for (NWUCourse course : courses) {
-					
-					if(!isSiteActiveForCourse(course)) {
-						continue;
-					}
+
 					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime);
 				}
 
@@ -468,12 +460,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						site = siteService.getSite(course.getEfundiSiteId());
 					} catch (IdUnusedException e1) {
 						log.info("Site not found for course : " + course);
-						continue;
-					}
 
-					if (site != null && site.isSoftlyDeleted()) {
-						log.info("Site has been softly deleted for course: " + course);
-						site = null;
 						continue;
 					}
 
@@ -525,10 +512,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
 				for (NWUCourse course : courses) {
-					
-					if(!isSiteActiveForCourse(course)) {
-						continue;
-					}
 
 					examLessonManager.updateExamLessonPlan(getExamLessonDao(), course, previousFireTime);
 				}
@@ -656,10 +639,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			return;
 		}
 
-		if (site != null && site.isSoftlyDeleted()) {
-			log.info("Site has been softly deleted for course: " + course);
-			return;
-		}
 		
 		try {
 			
@@ -681,28 +660,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	}
 
 	/**
-	 * 
-	 * @param course
-	 * @return
-	 */
-	private boolean isSiteActiveForCourse(NWUCourse course) {
-		Site site = null;
-		try {
-			site = siteService.getSite(course.getEfundiSiteId());
-		} catch (IdUnusedException e1) {
-			log.info("Site not found for course : " + course);
-			return false;
-		}
 
-		if (site != null && site.isSoftlyDeleted()) {
-			log.info("Site has been softly deleted for course: " + course);
-			site = null;
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Soft remove eFundi site
 	 * 
 	 * @param efundiSiteId
