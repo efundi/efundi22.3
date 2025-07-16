@@ -189,6 +189,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						createEFundiCourseSite(course);
 					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
 
+
 						courseManager.updateCourseLecturers(course, previousFireTime);
 						
 						// Update Course Sites
@@ -243,6 +244,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						// Create Course Sites
 						createEFundiCourseSite(course);
 					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
+
 
 						courseManager.updateCourseLecturers(course, previousFireTime);
 						// Update Course Sites
@@ -300,6 +302,12 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 //				String nwuNumber = null;
 				for (NWUCourse course : courses) {
+
+
+					Map<String, List<NWUStudentEnrollment>> resultMap = null;
+			        List<NWUStudentEnrollment> addedList = null;
+			        List<NWUStudentEnrollment> removedList = null;
+
 
 					Map<String, List<NWUStudentEnrollment>> resultMap = null;
 			        List<NWUStudentEnrollment> addedList = null;
@@ -360,6 +368,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						serverConfigurationService, siteService);
 
 				for (NWUCourse course : courses) {
+
 					
 					courseManager.updateCourseLecturers(course, previousFireTime);
 				}
@@ -403,6 +412,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
 				for (NWUCourse course : courses) {
+
 					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime);
 				}
 
@@ -450,6 +460,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						site = siteService.getSite(course.getEfundiSiteId());
 					} catch (IdUnusedException e1) {
 						log.info("Site not found for course : " + course);
+
 						continue;
 					}
 
@@ -501,6 +512,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
 				for (NWUCourse course : courses) {
+
 					examLessonManager.updateExamLessonPlan(getExamLessonDao(), course, previousFireTime);
 				}
 
@@ -626,6 +638,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			log.info("Site not found for course : " + course);
 			return;
 		}
+
 		
 		try {
 			
@@ -647,6 +660,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	}
 
 	/**
+
 	 * Soft remove eFundi site
 	 * 
 	 * @param efundiSiteId
