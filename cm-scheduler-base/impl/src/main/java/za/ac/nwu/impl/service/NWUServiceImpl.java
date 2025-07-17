@@ -309,10 +309,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			        List<NWUStudentEnrollment> removedList = null;
 
 
-					Map<String, List<NWUStudentEnrollment>> resultMap = null;
-			        List<NWUStudentEnrollment> addedList = null;
-			        List<NWUStudentEnrollment> removedList = null;
-
 					List<NWUStudentEnrollment> enrollmentList = course.getStudents();
 
 					if (enrollmentList != null && !enrollmentList.isEmpty()) {
