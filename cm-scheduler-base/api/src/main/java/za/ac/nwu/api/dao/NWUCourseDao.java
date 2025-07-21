@@ -1,5 +1,6 @@
 package za.ac.nwu.api.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import za.ac.nwu.api.model.NWUCourse;
@@ -20,13 +21,9 @@ public interface NWUCourseDao {
 
 	public boolean deleteCourse(Long id);
 	
-	public List<NWUCourse> getAllCoursesWithNoSiteId();	
+	public List<NWUCourse> getAllCoursesWithNoSiteIdOrUpdated(Date date);	
 
 	public List<NWUCourse> getAllCoursesWithSiteId();
-
-	public List<NWUCourse> getAllCoursesByYearAndSiteId(int year);
-
-	public List<NWUCourse> getAllCoursesByYear(int year);
 	
-	public NWUCourse findCourseForParams(int year, String courseCode, String campusCode, String semCode);
+	public NWUCourse findCourseForParams(String courseCode, String campusCode, String semCode);
 }

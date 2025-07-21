@@ -1,6 +1,7 @@
 package za.ac.nwu.impl.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -56,46 +57,13 @@ public class NWUCourseDaoImpl extends HibernateDaoSupport implements NWUCourseDa
 		return q.executeUpdate() > 0;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<NWUCourse> getAllCoursesByYearAndSiteId(int year) {
-
-		List<NWUCourse> courses = new ArrayList<>();
-
-		HibernateCallback<List<NWUCourse>> hcb = session -> {
-			Query q = session.getNamedQuery("FindAllCoursesByYearAndSiteId");
-			q.setParameter("year", year);
-			return q.list();
-		};
-
-		courses = getHibernateTemplate().execute(hcb);
-
-		return courses;
-	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<NWUCourse> getAllCoursesByYear(int year) {
-
-		List<NWUCourse> courses = new ArrayList<>();
-
-		HibernateCallback<List<NWUCourse>> hcb = session -> {
-			Query q = session.getNamedQuery("FindAllCoursesByYear");
-			q.setParameter("year", year);
-			return q.list();
-		};
-
-		courses = getHibernateTemplate().execute(hcb);
-
-		return courses;
-	}	
 
 	@Override
-	public NWUCourse findCourseForParams(int year, String courseCode, String campusCode, String semCode) {
+	public NWUCourse findCourseForParams(String courseCode, String campusCode, String semCode) {
 		Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
 		Query q = session.createQuery(
-				"from NWUCourse c where c.year = :year and c.courseCode = :courseCode and c.campusCode = :campusCode and c.semCode = :semCode");
-		q.setParameter("year", year);
+				"from NWUCourse c where c.courseCode = :courseCode and c.campusCode = :campusCode and c.semCode = :semCode");
 		q.setParameter("courseCode", courseCode);
 		q.setParameter("campusCode", campusCode);
 		q.setParameter("semCode", semCode);
@@ -103,12 +71,19 @@ public class NWUCourseDaoImpl extends HibernateDaoSupport implements NWUCourseDa
 	}
 
 	@Override
-	public List<NWUCourse> getAllCoursesWithNoSiteId() {
+	public List<NWUCourse> getAllCoursesWithNoSiteIdOrUpdated(Date date) {
 
 		List<NWUCourse> courses = new ArrayList<>();
 
 		HibernateCallback<List<NWUCourse>> hcb = session -> {
-			Query q = session.getNamedQuery("FindAllCoursesWithNoSiteId");
+			
+			Query q = null;
+			if(date == null) {
+				q = session.createQuery("SELECT c FROM NWUCourse c WHERE c.efundiSiteId is null OR c.efundiSiteId = '' ");
+			} else {
+				q = session.createQuery("SELECT c FROM NWUCourse c WHERE c.efundiSiteId is null OR c.efundiSiteId = '' OR c.auditDateTime > :date ");
+				q.setParameter("date", date.toInstant());
+			}
 			return q.list();
 		};
 

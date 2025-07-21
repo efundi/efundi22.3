@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
@@ -142,12 +143,12 @@ public class Utility {
 	}
 
 	/**
-	 * Returns the user Eid
+	 * Returns the user Id
 	 * 
 	 * @param userEid
 	 * @return
 	 */
-	public static String getValidUserEid(UserDirectoryService userDirectoryService, String userEid) {
+	public static String getValidUserByEId(UserDirectoryService userDirectoryService, String userEid) {
 		try {
 			return userDirectoryService.getUserId(userEid);
 		} catch (UserNotDefinedException e) {
