@@ -13,9 +13,9 @@ import org.quartz.JobExecutionException;
  */
 public interface NWUService {
 
-	public void updateNWUCourseManagement() throws JobExecutionException;
+	public void updateNWUCourseManagement(Date previousFireTime) throws JobExecutionException;
 
-	public void updateNWUeFundiCourseSites() throws JobExecutionException;
+	public void updateNWUeFundiCourseSites(Date previousFireTime) throws JobExecutionException;
 
 	public void updateNWUCourseEnrollments(Date previousFireTime) throws JobExecutionException;
 

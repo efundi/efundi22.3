@@ -99,6 +99,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private static final String TOOL_ID_SYNOPTIC_CHAT = "sakai.synoptic.chat";
 	private static final String TOOL_ID_SYNOPTIC_MESSAGECENTER = "sakai.synoptic.messagecenter";
 
+	private static final String CREATE_ACTION = "Create";
+	private static final String UPDATE_ACTION = "Update";
+	private static final String DELETE_ACTION = "Delete";
+	
 	private final static List<String> DEFAULT_TOOL_ID_MAP;
 	static {
 		DEFAULT_TOOL_ID_MAP = new ArrayList<String>();
@@ -147,10 +151,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	 * 
 	 * @throws JobExecutionException
 	 */
-	public void updateNWUCourseManagement() throws JobExecutionException {
+	public void updateNWUCourseManagement(Date previousFireTime) throws JobExecutionException {
 
 		// Get all CM data with no Sakai site id
-		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteId();
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteIdOrUpdated(previousFireTime);
 		if (courses.isEmpty()) {
 			log.info("No courses found ");
 		}
@@ -174,26 +178,29 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService, siteService);
 
-				String nwuNumber = null;
 				for (NWUCourse course : courses) {
-
-					NWULecturer lecturer = course.getLecturer();
-					if (lecturer == null) {
-						log.error("Course must have an Instuctor: " + course);
-						continue;
-					}
 					
-					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
-					if (nwuNumber == null) {
-						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
-						continue;
+					if(course.getAction().equals(CREATE_ACTION) && course.getEfundiSiteId() == null) {
+						
+						// Create Course Management data
+						courseManager.createCourseManagement(course);
+
+						// Create Course Sites
+						createEFundiCourseSite(course);
+					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
+
+
+						courseManager.updateCourseLecturers(course, previousFireTime);
+						
+						// Update Course Sites
+						updateEFundiCourseSite(course);
+					} else if (course.getAction().equals(DELETE_ACTION) && course.getEfundiSiteId() != null) {
+
+						courseManager.updateCourseLecturerToAdminForSiteRemoval(course);
+						
+						// Remove Course Sites
+						removeEFundiCourseSite(course);
 					}
-
-					// Create Course Management data
-					courseManager.createCourseManagement(course);
-
-					// Create Course Sites
-					createEFundiCoureSite(course);
 				}
 
 			} catch (Exception e) {
@@ -210,10 +217,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	/**
 	 * Updating NWU Course Sites from CM data
 	 */
-	public void updateNWUeFundiCourseSites() {
+	public void updateNWUeFundiCourseSites(Date previousFireTime) {
 
 		// Get all CM data with no Sakai site id
-		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteId();
+		List<NWUCourse> courses = getCourseDao().getAllCoursesWithNoSiteIdOrUpdated(previousFireTime);
 		if (!courses.isEmpty()) {
 
 			// Become admin in order to add sites
@@ -228,22 +235,27 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				loginToSakai();
 				securityService.pushAdvisor(yesMan);
 
-				String nwuNumber = null;
+				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
+						serverConfigurationService, siteService);
+				
 				for (NWUCourse course : courses) {
 
-					NWULecturer lecturer = course.getLecturer();
-					if (lecturer == null) {
-						log.error("Course must have an Instuctor: " + course);
-						continue;
-					}
-					
-					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
-					if (nwuNumber == null) {
-						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
-						continue;
-					}
+					if(course.getAction().equals(CREATE_ACTION) && course.getEfundiSiteId() == null) {
+						// Create Course Sites
+						createEFundiCourseSite(course);
+					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
 
-					createEFundiCoureSite(course);
+
+						courseManager.updateCourseLecturers(course, previousFireTime);
+						// Update Course Sites
+						updateEFundiCourseSite(course);
+					} else if (course.getAction().equals(DELETE_ACTION) && course.getEfundiSiteId() != null) {
+
+						courseManager.updateCourseLecturerToAdminForSiteRemoval(course);
+						
+						// Remove Course Sites
+						removeEFundiCourseSite(course);
+					}
 				}
 
 			} catch (Exception e) {
@@ -284,28 +296,30 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 				loginToSakai();
 //				securityService.pushAdvisor(yesMan);
-
+				
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService, siteService);
 
-				String nwuNumber = null;
+//				String nwuNumber = null;
 				for (NWUCourse course : courses) {
-					
-					if (course.getLecturer() == null) {
-						log.error("Course must have an Instuctor: " + course);
-						continue;
-					}
-					
-					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
-					if (nwuNumber == null) {
-						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
-						continue;
-					}
+
+
+					Map<String, List<NWUStudentEnrollment>> resultMap = null;
+			        List<NWUStudentEnrollment> addedList = null;
+			        List<NWUStudentEnrollment> removedList = null;
+
 
 					List<NWUStudentEnrollment> enrollmentList = course.getStudents();
 
 					if (enrollmentList != null && !enrollmentList.isEmpty()) {
-						courseManager.updateCourseEnrollment(course, previousFireTime);
+				        
+						resultMap = courseManager.updateCourseEnrollment(course, previousFireTime);
+						
+						addedList = resultMap.get(NWUCourseManager.ADDED);
+						addedList.forEach(enrollment -> enrollmentDao.updateEnrollment(enrollment));
+
+						removedList = resultMap.get(NWUCourseManager.REMOVED);
+						removedList.forEach(enrollment -> enrollmentDao.updateEnrollment(enrollment));
 					} else {
 						log.info("No students found ");
 					}
@@ -349,20 +363,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseManager courseManager = new NWUCourseManager(cmAdmin, cmService, userDirectoryService,
 						serverConfigurationService, siteService);
 
-				String nwuNumber = null;
 				for (NWUCourse course : courses) {
 
-					NWULecturer lecturer = course.getLecturer();
-					if (lecturer == null) {
-						log.error("Course must have an Instuctor: " + course);
-						continue;
-					}
-					
-					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
-					if (nwuNumber == null) {
-						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
-						continue;
-					}
 					
 					courseManager.updateCourseLecturers(course, previousFireTime);
 				}
@@ -405,19 +407,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
-				String nwuNumber = null;
 				for (NWUCourse course : courses) {
-					
-					if (course.getLecturer() == null) {
-						log.error("Course must have an Instuctor: " + course);
-						continue;
-					}
-					
-					nwuNumber = Utility.getValidUserEid(userDirectoryService, Integer.toString(course.getLecturer().getInstructorNumber()));
-					if (nwuNumber == null) {
-						log.error("Could not find lecturer user " + nwuNumber + " for course: " + course);
-						continue;
-					}		
+
 					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime);
 				}
 
@@ -464,7 +455,8 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 					try {
 						site = siteService.getSite(course.getEfundiSiteId());
 					} catch (IdUnusedException e1) {
-						log.info("Site not found for Id : " + course);
+						log.info("Site not found for course : " + course);
+
 						continue;
 					}
 
@@ -515,17 +507,9 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				NWUCourseExamLessonManager examLessonManager = new NWUCourseExamLessonManager(userDirectoryService,
 						serverConfigurationService, siteService, gradebookService, sectionManager);
 
-				Site site = null;
 				for (NWUCourse course : courses) {
-					try {
-						site = siteService.getSite(course.getEfundiSiteId());
-					} catch (IdUnusedException e1) {
-						log.info("Site not found for Id : " + course);
-						continue;
-					}
 
 					examLessonManager.updateExamLessonPlan(getExamLessonDao(), course, previousFireTime);
-					site = null;
 				}
 
 			} catch (Exception e) {
@@ -540,18 +524,16 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	}
 
 	/**
-	 * Create eFundi course site
+	 *  eFundi course site
 	 * 
 	 * @param course
 	 * @return
 	 */
-	private Site createEFundiCoureSite(NWUCourse course) {
+	private Site createEFundiCourseSite(NWUCourse course) {
 
 		log.info("NWU - Creating unpublished eFundi Course Site");
 		Site newSite = null;
-		try {
-			User user = userDirectoryService.getUserByEid(Integer.toString(course.getLecturer().getInstructorNumber()));
-			
+		try {			
 			String siteId = idManager.createUuid();
 			String description = course.getCourseDescr();
 			newSite = siteService.addSite(siteId, "course");
@@ -570,8 +552,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			propEdit.addProperty(Site.PROP_SITE_TERM, term);
 			propEdit.addProperty(Site.PROP_SITE_TERM_EID, termEid);
 
-			// add lecturer user as the maintainer
-			newSite.addMember(Integer.toString(course.getLecturer().getInstructorNumber()), newSite.getMaintainRole(), true, false);
+			User user = addLecturerToSite(course, newSite);
 
 			propEdit.addProperty(Site.PROP_SITE_CONTACT_NAME, user.getDisplayName());
 			propEdit.addProperty(Site.PROP_SITE_CONTACT_EMAIL, user.getEmail());
@@ -598,9 +579,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 		} catch (IdUsedException e) {
 			log.error("Could not create a site for : " + course);
 			log.error("createSakaiSite - IdUsedException: " + e.getId(), e);
-		} catch (UserNotDefinedException e) {
-			log.error("Could not create a site for : " + course);
-			log.error("UserNotDefinedException for lecturer: " + course.getLecturer().getInstructorNumber() + ", site could not be created. " + e.getMessage(), e);
 		} catch (IdUnusedException e) {
 			log.error("Could not create a site for : " + course);
 			log.error("createSakaiSite - IdUnusedException: " + e.getId(), e);
@@ -610,6 +588,88 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 			log.error("createSakaiSite: " + e.getMessage(), e);
 		}
 		return newSite;
+	}
+
+	/**
+	 * Adds a Lecturer if found
+	 * 
+	 * @param course
+	 * @param newSite
+	 * @return
+	 */
+	private User addLecturerToSite(NWUCourse course, Site newSite) {
+		boolean lecturerFound = false;
+		User user = null;
+		if(course.getLecturer() != null) {
+			try {
+				user = userDirectoryService.getUserByEid(course.getLecturer().getInstructorNumber());
+				
+				// add lecturer user as the maintainer
+				newSite.addMember(course.getLecturer().getInstructorNumber(), newSite.getMaintainRole(), true, false);
+				lecturerFound = true;
+			} catch (UserNotDefinedException e) {
+				log.error("Could not create a site for : " + course);
+				log.error("UserNotDefinedException for lecturer: " + course.getLecturer().getInstructorNumber() + ", site could not be created. " + e.getMessage(), e);
+				lecturerFound = false;
+			}
+		} 
+		if(user == null || !lecturerFound) {
+			user = userDirectoryService.getCurrentUser();
+		}
+		return user;
+	}
+	
+	/**
+	 * Update eFundi course site
+	 * 
+	 * @param course
+	 * @return
+	 */
+	private void updateEFundiCourseSite(NWUCourse course) {
+		log.info("NWU - Update eFundi Course Site");
+		Site site = null;
+		try {
+			site = siteService.getSite(course.getEfundiSiteId());
+		} catch (IdUnusedException e1) {
+			log.info("Site not found for course : " + course);
+			return;
+		}
+
+		
+		try {
+			
+			String description = course.getCourseDescr();
+			site.setDescription(description);
+			site.setShortDescription(description);
+
+			siteService.save(site);
+
+			log.info("NWU - Updated Course site: " + course.getEfundiSiteId());
+
+		} catch (PermissionException e) {
+			log.error("Could not update a site for : " + course);
+			log.error("updateSakaiSite: " + e.getMessage(), e);
+		} catch (IdUnusedException e) {
+			log.error("Could not update a site for : " + course);
+			log.error("updateSakaiSite - IdUsedException: " + e.getId(), e);
+		}
+	}
+
+	/**
+
+	 * Soft remove eFundi site
+	 * 
+	 * @param efundiSiteId
+	 */
+	private void removeEFundiCourseSite(NWUCourse course) {
+		try {
+			Site site = siteService.getSite(course.getEfundiSiteId());
+			siteService.removeSite(site, false);
+		} catch (IdUnusedException e1) {
+			log.info("Site not found for Id : " + course);
+		} catch (PermissionException e) {
+			log.info("Not allowed to delete site : " + course);
+		}
 	}
 
 	/**
@@ -702,7 +762,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private String generateSiteName(NWUCourse course) {
 		StringBuilder siteName = new StringBuilder();
 		try {
-			siteName.append(course.getCourseCode()).append(HYPHEN).append(course.getTermStartDate().getYear());
+			siteName.append(course.getCourseCode()).append(HYPHEN).append(course.getTerm().substring(0, 4));
 		} catch (Exception e) {
 			log.warn("Could not create site name generateSiteName() for course: " + course);
 			return null;

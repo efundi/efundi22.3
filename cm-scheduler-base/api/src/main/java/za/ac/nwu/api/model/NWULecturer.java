@@ -38,8 +38,8 @@ public class NWULecturer {
 	private Long courseId;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "instructor_number", nullable = false)
-	private Integer instructorNumber;
+	@Column(name = "instructor_number", length = 20, nullable = false)
+	private String instructorNumber;
 
 	@Column(name = "instructor_name", length = 160, nullable = true)
 	private String instructorName;
@@ -55,7 +55,7 @@ public class NWULecturer {
 	public NWULecturer() {
 	}
 
-	public NWULecturer(Long courseId, Integer instructorNumber, String instructorName, Instant auditDateTime) {
+	public NWULecturer(Long courseId, String instructorNumber, String instructorName, Instant auditDateTime) {
 		this.courseId = courseId;
 		this.instructorNumber = instructorNumber;
 		this.instructorName = instructorName;
