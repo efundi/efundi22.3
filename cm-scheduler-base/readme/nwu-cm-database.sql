@@ -25,17 +25,22 @@ CREATE TABLE `cm_course_section_instructor` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `gb_lesson_plan` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `course_id`int(11) NOT NULL,
+  `source_system_id` varchar(100) NOT NULL,
+  `course_id` int(11) NOT NULL,
+  `efundi_gradebook_id` bigint(20) DEFAULT NULL,
+  `lesson_code` varchar(15) NOT NULL DEFAULT '',
   `class_test_number` int(3) NOT NULL,
   `class_test_code` varchar(16) NOT NULL,
-  `class_test_name` varchar(80) NOT NULL,
-  `class_test_max_score` DOUBLE(3,0) NOT NULL,
-  `efundi_gradebook_id` bigint(20) NULL,
-  `audit_date_time` DATETIME NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `gb_lp_unique_index` (`course_id`,`class_test_number`,`class_test_code`),
-  CONSTRAINT `fk_lp_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`)
+  `class_test_name` varchar(40) NOT NULL,
+  `class_test_max_score` double(3,0) NOT NULL,
+  `processed` tinyint(4) NOT NULL DEFAULT '0',
+  `controlNote` varchar(20) NOT NULL DEFAULT 'N',
+  `action` varchar(20) NOT NULL DEFAULT '',
+  `audit_date_time` datetime NOT NULL,
+  PRIMARY KEY (`source_system_id`),
+  UNIQUE KEY `gb_lp_unique_index` (`source_system_id`,`course_id`),
+  KEY `fk_lp_course_id_idx` (`course_id`),
+  CONSTRAINT `fk_lp_course_id` FOREIGN KEY (`course_id`) REFERENCES `cm_curriculum_course` (`id`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `cm_student_enrollment` (
@@ -53,14 +58,14 @@ CREATE TABLE `cm_student_enrollment` (
 
 CREATE TABLE `gb_lesson_grades` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `lesson_id`int(11) NOT NULL,
+  `lesson_id` varchar(100) NOT NULL,
+  `nwu_number` int(20) NOT NULL,
+  `grade` double(3,0) NOT NULL,
+  `audit_date_time` datetime NOT NULL,
   `section_code` varchar(8) NOT NULL,
-  `nwu_number` int(20) NOT NULL,  
-  `grade` DOUBLE(3,0) NOT NULL,
-  `audit_date_time` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `gb_lg_unique_index` (`lesson_id`,`section_code`,`nwu_number`),
-  CONSTRAINT `fk_lg_course_id` FOREIGN KEY (`lesson_id`) REFERENCES `gb_lesson_plan` (`id`)
+  UNIQUE KEY `gb_lg_unique_index` (`lesson_id`,`nwu_number`),
+  CONSTRAINT `fk_lesson_plan` FOREIGN KEY (`lesson_id`) REFERENCES `gb_lesson_plan` (`source_system_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `gb_exam_lesson` (

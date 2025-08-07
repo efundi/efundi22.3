@@ -65,15 +65,6 @@ public class NWUCourseManager {
 	private String courseSetCategory = null;
 	private String sectionCategory = null;
 	private String sectionCategoryDesc = null;
-	
-	private static final String SCHEDULED = "Scheduled";
-	private static final String CURRENT = "Current";
-	private static final String GRADE_POSTED = "Grade Posted";
-	private static final String DROPPED = "Dropped";
-	private static final String FUTURE = "Future";	
-
-	public static final String ADDED = "ADDED";	
-	public static final String REMOVED = "REMOVED";	
 
 	public NWUCourseManager(final CourseManagementAdministration cmAdmin, final CourseManagementService cmService,
 			final UserDirectoryService userDirectoryService,
@@ -344,7 +335,7 @@ public class NWUCourseManager {
 				continue;
 			}
 			nwuNumber = Integer.toString(studentEnrollment.getNwuNumber());
-			if (studentEnrollment.getCourseStatus().equals(SCHEDULED) || studentEnrollment.getCourseStatus().equals(CURRENT) || studentEnrollment.getCourseStatus().equals(GRADE_POSTED)) {
+			if (studentEnrollment.getCourseStatus().equals(Constants.SCHEDULED) || studentEnrollment.getCourseStatus().equals(Constants.CURRENT) || studentEnrollment.getCourseStatus().equals(Constants.GRADE_POSTED)) {
 				// Enrollment
 				cmAdmin.addOrUpdateEnrollment(nwuNumber, enrollmentSetReference,
 						enrollmentStatus, enrollmentCredits, gradingScheme);
@@ -356,10 +347,10 @@ public class NWUCourseManager {
 						+ courseOfferingReference);
 				
 				students.add(new RosterUser(nwuNumber));
-				studentEnrollment.setControlNote(ADDED);
+				studentEnrollment.setControlNote(Constants.ADDED);
 				addedList.add(studentEnrollment);
 			}
-			if (studentEnrollment.getCourseStatus().equals(DROPPED) || studentEnrollment.getCourseStatus().equals(FUTURE)) {
+			if (studentEnrollment.getCourseStatus().equals(Constants.DROPPED) || studentEnrollment.getCourseStatus().equals(Constants.FUTURE)) {
 				// Section Memberships
 				cmAdmin.removeSectionMembership(nwuNumber, courseOfferingReference);
 				log.info("Removed Student Membership from Section: " + studentEnrollment.getNwuNumber() + " - "
@@ -367,13 +358,13 @@ public class NWUCourseManager {
 				// Enrollment
 				cmAdmin.removeEnrollment(nwuNumber, enrollmentSetReference);
 				log.info("Removed Student from Enrollment: " + nwuNumber + " - " + enrollmentSetReference);
-				studentEnrollment.setControlNote(NWUCourseManager.REMOVED);
+				studentEnrollment.setControlNote(Constants.REMOVED);
 				removedList.add(studentEnrollment);
 			}
 		}
 		
-        result.put(ADDED, addedList);
-        result.put(REMOVED, removedList);
+        result.put(Constants.ADDED, addedList);
+        result.put(Constants.REMOVED, removedList);
 
         if (serverConfigurationService.getBoolean("nwu.cm.users.create", false) && !students.isEmpty()) {
             LDAPRetrieval ldap = Utility.getLDAPRetrieval(serverConfigurationService);

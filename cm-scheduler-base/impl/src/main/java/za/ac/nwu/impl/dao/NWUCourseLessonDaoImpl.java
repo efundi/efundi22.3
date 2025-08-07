@@ -32,16 +32,16 @@ public class NWUCourseLessonDaoImpl extends HibernateDaoSupport implements NWUCo
 	@Override
 	public NWUGBLesson getLessonById(Long id) {
 		Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
-		Query q = session.createQuery("from NWUGBLesson l where l.id=:id");
-		q.setParameter("id", id);
+		Query q = session.createQuery("from NWUGBLesson l where l.sourceSystemId=:sourceSystemId");
+		q.setParameter("sourceSystemId", id);
 		return (NWUGBLesson) q.uniqueResult();
 	}
 
 	@Override
 	public boolean deleteLesson(Long id) {
 		Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
-		Query q = session.createQuery("delete from NWUGBLesson l where l.id=:id");
-		q.setParameter("id", id);
+		Query q = session.createQuery("delete from NWUGBLesson l where l.sourceSystemId=:sourceSystemId");
+		q.setParameter("sourceSystemId", id);
 		return q.executeUpdate() > 0;
 	}
 

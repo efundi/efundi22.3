@@ -46,7 +46,7 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 	}
 
 	@Override
-	public NWULessonGrade getLessonGradeByLessonIdAndNwuNumber(Long lessonId, Integer nwuNumber) {
+	public NWULessonGrade getLessonGradeByLessonIdAndNwuNumber(String lessonId, Integer nwuNumber) {
 		Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
 		Query q = session.createQuery("from NWULessonGrade c where c.lessonId=:lessonId and c.nwuNumber=:nwuNumber");
 		q.setParameter("lessonId", lessonId);
@@ -55,7 +55,7 @@ public class NWULessonGradeDaoImpl extends HibernateDaoSupport implements NWULes
 	}
 	
 	@Override
-	public List<NWULessonGrade> getAllGradesByLessonId(Long lessonId) {
+	public List<NWULessonGrade> getAllGradesByLessonId(String lessonId) {
 		List<NWULessonGrade> grades = new ArrayList<>();
 
 		HibernateCallback<List<NWULessonGrade>> hcb = session -> {
