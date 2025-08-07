@@ -15,6 +15,7 @@ import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.coursemanagement.api.CourseManagementAdministration;
 import org.sakaiproject.coursemanagement.api.CourseManagementService;
+import org.sakaiproject.email.api.EmailService;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUnusedException;
@@ -49,6 +50,7 @@ import za.ac.nwu.api.model.NWUCourse;
 import za.ac.nwu.api.model.NWULecturer;
 import za.ac.nwu.api.model.NWUStudentEnrollment;
 import za.ac.nwu.api.service.NWUService;
+import za.ac.nwu.cm.util.Constants;
 import za.ac.nwu.cm.util.NWUCourseExamLessonManager;
 import za.ac.nwu.cm.util.NWUCourseLessonPlanManager;
 import za.ac.nwu.cm.util.NWUCourseManager;
@@ -74,6 +76,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private IdManager idManager;
 	private GradebookService gradebookService;
 	private SectionManager sectionManager;
+	private EmailService emailService;
 
 	private ApplicationContext applicationContext;
 
@@ -98,10 +101,6 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	private static final String TOOL_ID_SUMMARY_CALENDAR = "sakai.summary.calendar";
 	private static final String TOOL_ID_SYNOPTIC_CHAT = "sakai.synoptic.chat";
 	private static final String TOOL_ID_SYNOPTIC_MESSAGECENTER = "sakai.synoptic.messagecenter";
-
-	private static final String CREATE_ACTION = "Create";
-	private static final String UPDATE_ACTION = "Update";
-	private static final String DELETE_ACTION = "Delete";
 	
 	private final static List<String> DEFAULT_TOOL_ID_MAP;
 	static {
@@ -180,21 +179,21 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 
 				for (NWUCourse course : courses) {
 					
-					if(course.getAction().equals(CREATE_ACTION) && course.getEfundiSiteId() == null) {
+					if(course.getAction().equalsIgnoreCase(Constants.CREATE) && course.getEfundiSiteId() == null) {
 						
 						// Create Course Management data
 						courseManager.createCourseManagement(course);
 
 						// Create Course Sites
 						createEFundiCourseSite(course);
-					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
+					} else if (course.getAction().equalsIgnoreCase(Constants.UPDATE) && course.getEfundiSiteId() != null) {
 
 
 						courseManager.updateCourseLecturers(course, previousFireTime);
 						
 						// Update Course Sites
 						updateEFundiCourseSite(course);
-					} else if (course.getAction().equals(DELETE_ACTION) && course.getEfundiSiteId() != null) {
+					} else if (course.getAction().equalsIgnoreCase(Constants.DELETE) && course.getEfundiSiteId() != null) {
 
 						courseManager.updateCourseLecturerToAdminForSiteRemoval(course);
 						
@@ -240,16 +239,16 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				
 				for (NWUCourse course : courses) {
 
-					if(course.getAction().equals(CREATE_ACTION) && course.getEfundiSiteId() == null) {
+					if(course.getAction().equalsIgnoreCase(Constants.CREATE) && course.getEfundiSiteId() == null) {
 						// Create Course Sites
 						createEFundiCourseSite(course);
-					} else if (course.getAction().equals(UPDATE_ACTION) && course.getEfundiSiteId() != null) {
+					} else if (course.getAction().equalsIgnoreCase(Constants.UPDATE) && course.getEfundiSiteId() != null) {
 
 
 						courseManager.updateCourseLecturers(course, previousFireTime);
 						// Update Course Sites
 						updateEFundiCourseSite(course);
-					} else if (course.getAction().equals(DELETE_ACTION) && course.getEfundiSiteId() != null) {
+					} else if (course.getAction().equalsIgnoreCase(Constants.DELETE) && course.getEfundiSiteId() != null) {
 
 						courseManager.updateCourseLecturerToAdminForSiteRemoval(course);
 						
@@ -315,10 +314,10 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 				        
 						resultMap = courseManager.updateCourseEnrollment(course, previousFireTime);
 						
-						addedList = resultMap.get(NWUCourseManager.ADDED);
+						addedList = resultMap.get(Constants.ADDED);
 						addedList.forEach(enrollment -> enrollmentDao.updateEnrollment(enrollment));
 
-						removedList = resultMap.get(NWUCourseManager.REMOVED);
+						removedList = resultMap.get(Constants.REMOVED);
 						removedList.forEach(enrollment -> enrollmentDao.updateEnrollment(enrollment));
 					} else {
 						log.info("No students found ");
@@ -405,11 +404,11 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
-						serverConfigurationService, siteService, gradebookService, sectionManager);
+						serverConfigurationService, siteService, gradebookService, sectionManager, securityService, emailService);
 
 				for (NWUCourse course : courses) {
 
-					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime);
+					lessonManager.updateCourseLessonPlan(getLessonDao(), course, previousFireTime, sessionManager.getCurrentSessionUserId());
 				}
 
 			} catch (Exception e) {
@@ -448,7 +447,7 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 //				securityService.pushAdvisor(yesMan);
 
 				NWUCourseLessonPlanManager lessonManager = new NWUCourseLessonPlanManager(userDirectoryService,
-						serverConfigurationService, siteService, gradebookService, sectionManager);
+						serverConfigurationService, siteService, gradebookService, sectionManager, securityService, emailService);
 
 				Site site = null;
 				for (NWUCourse course : courses) {
@@ -914,4 +913,12 @@ public class NWUServiceImpl implements NWUService, ApplicationContextAware {
 	public void setSectionManager(SectionManager sectionManager) {
 		this.sectionManager = sectionManager;
 	}
+
+	public EmailService getEmailService() {
+		return emailService;
+	}
+
+	public void setEmailService(EmailService emailService) {
+		this.emailService = emailService;
+	}	
 }
