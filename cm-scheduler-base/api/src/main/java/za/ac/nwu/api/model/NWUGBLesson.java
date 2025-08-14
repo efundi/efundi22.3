@@ -4,8 +4,6 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -26,24 +24,25 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-public class NWUGBLesson {	
-
+public class NWUGBLesson {
+	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "id")
-	private Long id;
-
+	@EqualsAndHashCode.Include
+	@Column(name = "source_system_id", length = 100, nullable = false)
+	private String sourceSystemId;
+	
 	@EqualsAndHashCode.Include
 	@Column(name = "course_id", nullable = false)
 	private Long courseId;
 
-	@EqualsAndHashCode.Include
+	@Column(name = "lesson_code", length = 15, nullable = false)
+	private String lessonCode;
+	
 	@Column(name = "class_test_number", nullable = false)
 	private Integer classTestNumber;
 
-	@EqualsAndHashCode.Include
 	@Column(name = "class_test_code", length = 8, nullable = false)
-	private String classTestCode;	
+	private String classTestCode;
 
 	@Column(name = "class_test_name", length = 40, nullable = true)
 	private String classTestName;
@@ -53,7 +52,16 @@ public class NWUGBLesson {
 	
 	@Column(name = "efundi_gradebook_id", nullable = true)
 	private Long efundiGradebookId;
+	
+	@Column(name = "processed", nullable = false)
+    private Byte processed;
 
+	@Column(name = "controlNote", length = 20, nullable = false)
+	private String controlNote;	
+
+	@Column(name = "action", length = 20, nullable = false)
+	private String action;
+	  
     @Type(type = "org.hibernate.type.InstantType")
 	@Column(name = "audit_date_time", nullable = false)
 	private Instant auditDateTime;
@@ -65,13 +73,18 @@ public class NWUGBLesson {
 	public NWUGBLesson() {
 	}
 
-	public NWUGBLesson(Long courseId, Integer classTestNumber, String classTestCode, String classTestName,
-			Double classTestMaxScore, Instant auditDateTime) {
+	public NWUGBLesson(String sourceSystemId, Long courseId, String lessonCode, Integer classTestNumber, String classTestCode, String classTestName,
+			Double classTestMaxScore, Byte processed, String controlNote, String action, Instant auditDateTime) {
+		this.sourceSystemId = sourceSystemId;
 		this.courseId = courseId;
+		this.lessonCode = lessonCode;
 		this.classTestNumber = classTestNumber;
 		this.classTestCode = classTestCode;
 		this.classTestName = classTestName;
 		this.classTestMaxScore = classTestMaxScore;
+		this.processed = processed;
+		this.controlNote = controlNote;
+		this.action = action;
 		this.auditDateTime = auditDateTime;
 	}
 }
