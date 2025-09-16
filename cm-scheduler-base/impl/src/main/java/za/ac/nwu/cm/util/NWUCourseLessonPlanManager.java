@@ -4,9 +4,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.sakaiproject.authz.api.Member;
+import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.email.api.EmailService;
+import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.SectionManager;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
@@ -15,8 +21,10 @@ import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameException;
 import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
+import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
@@ -46,15 +54,22 @@ public class NWUCourseLessonPlanManager {
 
 	private SectionManager sectionManager;
 
+	private SecurityService securityService;
+
+	private EmailService emailService;
+
 	public NWUCourseLessonPlanManager(final UserDirectoryService userDirectoryService,
 			final ServerConfigurationService serverConfigurationService, final SiteService siteService,
-			final GradebookService gradebookService, final SectionManager sectionManager) {
+			final GradebookService gradebookService, final SectionManager sectionManager,
+			SecurityService securityService, EmailService emailService) {
 
 		this.userDirectoryService = userDirectoryService;
 		this.serverConfigurationService = serverConfigurationService;
 		this.siteService = siteService;
 		this.gradebookService = gradebookService;
 		this.sectionManager = sectionManager;
+		this.securityService = securityService;
+		this.emailService = emailService;
 	}
 
 	/**
@@ -64,45 +79,28 @@ public class NWUCourseLessonPlanManager {
 	 * @param course
 	 * @param previousFireTime
 	 */
-	public void updateCourseLessonPlan(NWUCourseLessonDao lessonDao, NWUCourse course, Date previousFireTime) {
+	public void updateCourseLessonPlan(NWUCourseLessonDao lessonDao, NWUCourse course, Date previousFireTime,
+			String currentUserId) {
 
-		Assignment assignment = null;
-		String assignmentName = null;
 		for (NWUGBLesson lesson : course.getLessons()) {
 
 //			if (previousFireTime != null && !lesson.getAuditDateTime().isAfter(previousFireTime.toInstant())) {
 //				continue;
 //			}
+			
+			try {
+				Site site = siteService.getSite(course.getEfundiSiteId());
+			} catch (IdUnusedException e1) {
+				log.info("Site not found for course : " + course);
+				continue;
+			}
 
-			if (lesson.getEfundiGradebookId() != null) {
-				try {
-					assignment = gradebookService.getAssignmentByIDEvenIfRemoved(lesson.getEfundiGradebookId());
-
-					if (assignment.isRemoved()) {
-						gradebookService.restoreAssignment(assignment.getId());
-					}
-
-					assignmentName = getAssignmentName(lesson);
-
-					if (!assignmentName.equals(assignment.getName())) {
-						assignment.setName(assignmentName);
-						gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
-					}
-					assignmentName = null;
-					
-					if (!lesson.getClassTestMaxScore().equals(assignment.getPoints())) {
-						assignment.setPoints(lesson.getClassTestMaxScore());
-						gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
-					}
-					
-				} catch (AssessmentNotFoundException anf) {
-
-					// If a user deleted a Gradebook item but the lesson plan table has already been
-					// updated with the efundiGradebookId, a new one must be created
-					createNewAssignment(lessonDao, course, lesson);
-				}
-			} else {
-				createNewAssignment(lessonDao, course, lesson);
+			if (lesson.getAction() != null && lesson.getAction().equalsIgnoreCase(Constants.CREATE)) {
+				createAssignment(lessonDao, course, lesson, Constants.CREATE);
+			} else if (lesson.getAction() != null && lesson.getAction().equalsIgnoreCase(Constants.UPDATE)) {
+				updateAssignment(lessonDao, course, lesson, Constants.UPDATE, currentUserId);
+			} else if (lesson.getAction() != null && lesson.getAction().equalsIgnoreCase(Constants.DELETE)) {
+				deleteAssignment(lessonDao, course, lesson, Constants.DELETE, currentUserId);
 			}
 		}
 	}
@@ -113,26 +111,219 @@ public class NWUCourseLessonPlanManager {
 	 * @param lessonDao
 	 * @param course
 	 * @param lesson
+	 * @param action
 	 */
-	private void createNewAssignment(NWUCourseLessonDao lessonDao, NWUCourse course, NWUGBLesson lesson) {
-		Assignment assignment;
-		try {
-			assignment = new Assignment();
-			assignment.setName(getAssignmentName(lesson));// SP-classTestName-(classTestCode)-classTestMaxScore
-			assignment.setPoints(lesson.getClassTestMaxScore());
-			assignment.setReleased(false);
-			Long assignmentId = gradebookService.addAssignment(course.getEfundiSiteId(), assignment);
-			lesson.setEfundiGradebookId(assignmentId);
-			lesson.setAuditDateTime(Instant.now());		
-			lessonDao.updateLesson(lesson);
+	private void createAssignment(NWUCourseLessonDao lessonDao, NWUCourse course, NWUGBLesson lesson, String action) {		
 
-			log.info("Gradebook item created for Lesson plan: " + lesson);
+		try {
+
+			if (lesson.getEfundiGradebookId() == null && lesson.getProcessed() == 0) {
+
+				createNewAssignment(lessonDao, course, lesson, action);
+
+			} else {
+				Assignment assignment = gradebookService.getAssignmentByIDEvenIfRemoved(lesson.getEfundiGradebookId());
+
+				if (assignment.isRemoved()) {
+					gradebookService.restoreAssignment(assignment.getId());
+				}
+
+				String assignmentName = getAssignmentName(lesson);
+
+				if (!assignmentName.equals(assignment.getName())) {
+					assignment.setName(assignmentName);
+					gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+				}
+
+				if (!lesson.getClassTestMaxScore().equals(assignment.getPoints())) {
+					assignment.setPoints(lesson.getClassTestMaxScore());
+					gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+				}
+				if (lesson.getProcessed() == 0) {					
+					lesson.setProcessed((byte) 1);
+					lesson.setControlNote(action);
+					lesson.setAuditDateTime(Instant.now());
+					lessonDao.updateLesson(lesson);
+					log.info("Gradebook item updated for Lesson plan: " + lesson);
+				}
+			}
+
+		} catch (AssessmentNotFoundException anf) {
+
+			// If a user deleted a Gradebook item but the lesson plan table has already been
+			// updated with the efundiGradebookId, a new one must be created
+
+			createNewAssignment(lessonDao, course, lesson, action);
 
 		} catch (ConflictingAssignmentNameException cane) {
 			// Don't know why this can happen. Transaction related, perhaps. Not
 			// that important, anyway.
-			log.warn("Failed to set gb item name to: ",	getAssignmentName(lesson));
+			log.warn("Failed to set gb item name to: ", getAssignmentName(lesson));
+		}		
+	}
+
+	/**
+	 * 
+	 * @param lessonDao
+	 * @param course
+	 * @param lesson
+	 * @param action
+	 */
+	private void createNewAssignment(NWUCourseLessonDao lessonDao, NWUCourse course, NWUGBLesson lesson,
+			String action) {
+		Assignment assignment = new Assignment();
+		assignment.setName(getAssignmentName(lesson));// SP-classTestName-(lessonCode-classTestCode)-classTestMaxScore
+		assignment.setPoints(lesson.getClassTestMaxScore());
+		assignment.setReleased(false);
+		Long assignmentId = gradebookService.addAssignment(course.getEfundiSiteId(), assignment);
+		lesson.setEfundiGradebookId(assignmentId);
+		lesson.setProcessed((byte) 1);
+		lesson.setControlNote(action);
+		lesson.setAuditDateTime(Instant.now());
+		lessonDao.updateLesson(lesson);
+		log.info("Gradebook item created for Lesson plan: " + lesson);
+	}
+
+	/**
+	 * 
+	 * @param lessonDao
+	 * @param course
+	 * @param lesson
+	 * @param action
+	 * @param currentUserId
+	 */
+	private void updateAssignment(NWUCourseLessonDao lessonDao, NWUCourse course, NWUGBLesson lesson, String action,
+			String currentUserId) {
+
+		try {
+			Assignment assignment = gradebookService.getAssignmentByIDEvenIfRemoved(lesson.getEfundiGradebookId());
+			
+			if (assignment.isRemoved()) {
+				gradebookService.restoreAssignment(assignment.getId());
+			}
+
+			String assignmentName = getAssignmentName(lesson);
+
+			if (!assignmentName.equals(assignment.getName())) {
+				assignment.setName(assignmentName);
+				gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+			}
+
+			if (!lesson.getClassTestMaxScore().equals(assignment.getPoints())) {
+				assignment.setPoints(lesson.getClassTestMaxScore());
+				gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+			}
+			if (lesson.getProcessed() == 0) {				
+
+				Site site = siteService.getSite(course.getEfundiSiteId());
+				Set<String> students = site.getUsersIsAllowed(SectionAwareness.STUDENT_MARKER);
+
+				List<GradeDefinition> grades = gradebookService.getGradesForStudentsForItem(site.getId(),
+						assignment.getId(), new ArrayList<String>(students));
+
+				if (grades.isEmpty()) {
+					lesson.setControlNote(action);
+				} else {
+					lesson.setControlNote(Constants.ERROR);
+					sendEmailToInstructors(site, currentUserId);
+				}
+
+				lesson.setProcessed((byte) 1);
+				lesson.setAuditDateTime(Instant.now());
+				lessonDao.updateLesson(lesson);
+				log.info("Gradebook item updated for Lesson plan: " + lesson);
+			}
+
+		} catch (AssessmentNotFoundException anf) {
+
+			// If a user deleted a Gradebook item but the lesson plan table has already been
+			// updated with the efundiGradebookId, a new one must be created
+
+			createNewAssignment(lessonDao, course, lesson, Constants.UPDATE);
+
+		} catch (IdUnusedException e) {
+
+			lesson.setControlNote(action);
+			lesson.setProcessed((byte) 1);
+			lesson.setAuditDateTime(Instant.now());
+			lessonDao.updateLesson(lesson);
+			log.info("Gradebook item updated for Lesson plan: " + lesson);
 		}
+		log.info("Lesson Plan: " + lesson + "; Action: " + action);
+	}
+
+	/**
+	 * 
+	 * @param lessonDao
+	 * @param course
+	 * @param lesson
+	 * @param action
+	 * @param currentUserId
+	 */
+	private void deleteAssignment(NWUCourseLessonDao lessonDao, NWUCourse course, NWUGBLesson lesson, String action,
+			String currentUserId) {
+
+		try {
+			Assignment assignment = gradebookService.getAssignmentByIDEvenIfRemoved(lesson.getEfundiGradebookId());
+
+			String assignmentName = getAssignmentName(lesson);
+
+			if (!assignmentName.equals(assignment.getName())) {
+				assignment.setName(assignmentName);
+				gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+			}
+
+			if (!lesson.getClassTestMaxScore().equals(assignment.getPoints())) {
+				assignment.setPoints(lesson.getClassTestMaxScore());
+				gradebookService.updateAssignment(course.getEfundiSiteId(), assignment.getId(), assignment);
+			}
+			
+			if (lesson.getProcessed() == 0) {
+
+				Site site = siteService.getSite(course.getEfundiSiteId());
+				Set<String> students = site.getUsersIsAllowed(SectionAwareness.STUDENT_MARKER);
+
+				List<GradeDefinition> grades = gradebookService.getGradesForStudentsForItem(site.getId(),
+						assignment.getId(), new ArrayList<String>(students));
+
+				if (grades.isEmpty()) {
+					lesson.setControlNote(action);
+				} else {
+					lesson.setControlNote(Constants.ERROR);
+					sendEmailToInstructors(site, currentUserId);
+				}
+
+				lesson.setEfundiGradebookId(null);
+				lesson.setProcessed((byte) 1);
+				lesson.setAuditDateTime(Instant.now());
+				lessonDao.updateLesson(lesson);
+
+				gradebookService.removeAssignment(assignment.getId());
+				log.info("Gradebook item removed for Lesson plan: " + lesson);
+			}
+
+		} catch (AssessmentNotFoundException anf) {
+
+			// If a user deleted a Gradebook item but the lesson plan table has already been
+			// updated with the efundiGradebookId, a new one must be created
+
+			lesson.setControlNote(action);
+			lesson.setEfundiGradebookId(null);
+			lesson.setProcessed((byte) 1);
+			lesson.setAuditDateTime(Instant.now());
+			lessonDao.updateLesson(lesson);
+			log.info("Gradebook item removed for Lesson plan: " + lesson);
+
+		} catch (IdUnusedException e) {
+
+			lesson.setControlNote(action);
+			lesson.setEfundiGradebookId(null);
+			lesson.setProcessed((byte) 1);
+			lesson.setAuditDateTime(Instant.now());
+			lessonDao.updateLesson(lesson);
+			log.info("Gradebook item removed for Lesson plan: " + lesson);
+		}
+		log.info("Lesson Plan: " + lesson + "; Action: " + action);
 	}
 
 	/**
@@ -142,7 +333,8 @@ public class NWUCourseLessonPlanManager {
 	 * @return
 	 */
 	private String getAssignmentName(NWUGBLesson lesson) {
-		return "SP-" + lesson.getClassTestName() + "-(" + lesson.getClassTestCode() + ")-" + lesson.getClassTestMaxScore().intValue();
+		return "SP-" + lesson.getClassTestName() + "-(" + lesson.getLessonCode() + "-" + lesson.getClassTestCode()
+				+ ")-" + lesson.getClassTestMaxScore().intValue();
 	}
 
 	/**
@@ -158,8 +350,8 @@ public class NWUCourseLessonPlanManager {
 		Gradebook gradebook = (Gradebook) gradebookService.getGradebook(course.getEfundiSiteId());
 		List<Assignment> assignments = gradebookService.getAssignments(gradebook.getUid());
 		List<CourseSection> courseSections = sectionManager.getSections(course.getEfundiSiteId());
-		
-		Long lessonId = null;
+
+		String lessonId = null;
 		List<EnrollmentRecord> sectionEnrollmentList = null;
 		for (Assignment assignment : assignments) {
 
@@ -178,8 +370,8 @@ public class NWUCourseLessonPlanManager {
 
 				if (sectionEnrollmentList != null && !sectionEnrollmentList.isEmpty()) {
 
-					gradesForStudentsList = gradebookService.getGradesForStudentsForItem(
-							gradebook.getUid(), assignment.getId(), getStudentUuidsList(sectionEnrollmentList));
+					gradesForStudentsList = gradebookService.getGradesForStudentsForItem(gradebook.getUid(),
+							assignment.getId(), getStudentUuidsList(sectionEnrollmentList));
 
 					int gradesCount = gradesForStudentsList == null ? 0 : gradesForStudentsList.size();
 					log.info("Student grades list: gradebook.getUid() = " + gradebook.getUid()
@@ -187,8 +379,8 @@ public class NWUCourseLessonPlanManager {
 					if (gradesForStudentsList == null || gradesForStudentsList.isEmpty()) {
 						continue;
 					}
-					updateGrades(lessonGradeDao, course, lessonId, courseSection,
-							gradesForStudentsList, assignment.getPoints());
+					updateGrades(lessonGradeDao, course, lessonId, courseSection, gradesForStudentsList,
+							assignment.getPoints());
 				}
 			}
 		}
@@ -201,9 +393,9 @@ public class NWUCourseLessonPlanManager {
 	 * @param lessonId
 	 * @param courseSection
 	 * @param gradesForStudentsList
-	 * @param maxGrade 
+	 * @param maxGrade
 	 */
-	private void updateGrades(NWULessonGradeDao lessonGradeDao, NWUCourse course, Long lessonId,
+	private void updateGrades(NWULessonGradeDao lessonGradeDao, NWUCourse course, String lessonId,
 			CourseSection courseSection, List<GradeDefinition> gradesForStudentsList, Double maxGrade) {
 		List<NWULessonGrade> lessonGrades = lessonGradeDao.getAllGradesByLessonId(lessonId);
 		NWULessonGrade lessonGrade = null;
@@ -219,10 +411,11 @@ public class NWUCourseLessonPlanManager {
 					log.error("Could not find user " + gradeDefinition.getStudentUid() + ": " + course);
 					continue;
 				}
-				
+
 				studentGrade = Double.parseDouble(gradeDefinition.getGrade());
 				if (Double.compare(studentGrade, maxGrade) > 0) {
-					log.error("Student " + nwuNumber + " is not allowed to have a grade value " + studentGrade + " that is more than the Assignment maximum grade value " + maxGrade + " : " + course);
+					log.error("Student " + nwuNumber + " is not allowed to have a grade value " + studentGrade
+							+ " that is more than the Assignment maximum grade value " + maxGrade + " : " + course);
 					continue;
 				}
 
@@ -245,10 +438,11 @@ public class NWUCourseLessonPlanManager {
 					log.error("Could not find user " + gradeDefinition.getStudentUid() + ": " + course);
 					continue;
 				}
-				
+
 				studentGrade = Double.parseDouble(gradeDefinition.getGrade());
 				if (Double.compare(studentGrade, maxGrade) > 0) {
-					log.error("Student " + nwuNumber + " is not allowed to have a grade value " + studentGrade + " that is more than the Assignment maximum grade value " + maxGrade + " : " + course);
+					log.error("Student " + nwuNumber + " is not allowed to have a grade value " + studentGrade
+							+ " that is more than the Assignment maximum grade value " + maxGrade + " : " + course);
 					continue;
 				}
 
@@ -301,11 +495,11 @@ public class NWUCourseLessonPlanManager {
 	 * @param id
 	 * @return
 	 */
-	private Long getLessonId(NWUCourse course, Long id) {
+	private String getLessonId(NWUCourse course, Long id) {
 		List<NWUGBLesson> lessons = course.getLessons();
 		for (NWUGBLesson lesson : lessons) {
 			if (lesson.getEfundiGradebookId() != null && lesson.getEfundiGradebookId().equals(id)) {
-				return lesson.getId();
+				return lesson.getSourceSystemId();
 			}
 		}
 		return null;
@@ -355,5 +549,91 @@ public class NWUCourseLessonPlanManager {
 		}
 
 		return String.join(",", studentNumberList);
+	}
+
+	/**
+	 * 
+	 * @param site
+	 * @param currentUserId
+	 */
+	private void sendEmailToInstructors(Site site, String currentUserId) {
+
+		Set<String> userIds = site.getUsersIsAllowed("section.role.instructor"); // INST_ROLE
+
+		// the site could contain references to deleted users
+		List<User> activeUsers = userDirectoryService.getUsers(userIds);
+
+		for (int i = 0; i < activeUsers.size(); i++) {
+			User user = activeUsers.get(i);
+			if (user.getId().equals(currentUserId)) {
+				continue;
+			}
+			String from = serverConfigurationService.getString("setup.request",
+					"no-reply@" + serverConfigurationService.getServerName());
+			List<String> headers = new ArrayList<>();
+			String subject = "Site Lesson Plan update";
+			headers.add("Subject: " + subject);
+			headers.add("From: " + "\"" + serverConfigurationService.getString("ui.service", "Sakai") + "\" <" + from
+					+ ">");
+
+			emailService.send(from, user.getEmail(), subject, getEmailBodyForUser(site, user), null, null, headers);
+		}
+	}
+
+	/**
+	 * 
+	 * @param site
+	 * @param user
+	 * @return
+	 */
+	private String getEmailBodyForUser(Site site, User user) {
+		StringBuffer buf = new StringBuffer();
+		buf.setLength(0);
+
+		// email body
+		buf.append("Dear " + user.getFirstName() + " " + user.getLastName() + ",\n\n");
+		buf.append("There have been some changes to your course site (" + serverConfigurationService.getServerUrl()
+				+ serverConfigurationService.getString("portalPath") + site.getReference() + ") on eFundi.\n\n");
+		buf.append("Please review all marks to ensure they are correct, and make any necessary adjustments.\n\n");
+		buf.append("Thank you,\n");
+		buf.append("The eFundi Team\n");
+		return buf.toString();
+	}
+
+	/**
+	 * 
+	 * @param siteId
+	 * @return
+	 */
+	public List<User> getInstructorsForSite(Site site) {
+		List<User> instructors = new ArrayList<User>();
+		if (site != null) {
+			for (Member member : site.getMembers()) {
+				if (isUserInstructor(member.getUserId(), site)) {
+					try {
+						instructors.add(userDirectoryService.getUser(member.getUserId()));
+					} catch (UserNotDefinedException e) {
+						log.error(e.getMessage(), e);
+					}
+				}
+			}
+		}
+		return instructors;
+	}
+
+	/**
+	 * 
+	 * @param userId
+	 * @param site
+	 * @return
+	 */
+	private boolean isUserInstructor(String userId, Site site) {
+		if (site.getMember(userId) != null) {
+			if (securityService.unlock(userId, SiteService.SECURE_UPDATE_SITE,
+					siteService.siteReference(site.getId()))) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

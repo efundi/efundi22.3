@@ -18,11 +18,11 @@ public interface NWULessonGradeDao {
 
 	public NWULessonGrade getLessonGradeById(Long id);
 
-	public NWULessonGrade getLessonGradeByLessonIdAndNwuNumber(Long lessonId, Integer nwuNumber);
+	public NWULessonGrade getLessonGradeByLessonIdAndNwuNumber(String lessonId, Integer nwuNumber);
 
 	public boolean deleteLessonGrade(Long id);
 	
-	public List<NWULessonGrade> getAllGradesByLessonId(Long lessonId);
+	public List<NWULessonGrade> getAllGradesByLessonId(String lessonId);
 	
 	public List<NWULessonGrade> getAllGradesbyNwuNumber(Integer nwuNumber);
 

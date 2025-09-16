@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sakaiproject.component.api.ServerConfigurationService;
-import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
 

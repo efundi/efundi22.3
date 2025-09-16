@@ -40,10 +40,10 @@ public class NWULessonGrade {
 	private Long id;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "lesson_id", length = 11, nullable = false)
-	private Long lessonId;
+	@Column(name = "lesson_id", length = 100, nullable = false)
+	private String lessonId;
 
-	@EqualsAndHashCode.Include
+//	@EqualsAndHashCode.Include
 	@Column(name = "section_code", length = 8, nullable = false)
 	private String sectionCode;
 
@@ -65,7 +65,7 @@ public class NWULessonGrade {
 	public NWULessonGrade() {
 	}
 
-	public NWULessonGrade(Long lessonId, String sectionCode, Integer nwuNumber, Double grade, Instant auditDateTime) {
+	public NWULessonGrade(String lessonId, String sectionCode, Integer nwuNumber, Double grade, Instant auditDateTime) {
 		this.lessonId = lessonId;
 		this.sectionCode = sectionCode;
 		this.nwuNumber = nwuNumber;
