@@ -280,7 +280,8 @@
 		<property name="gradebookService"
 			ref="org.sakaiproject.service.gradebook.GradebookService" />
 		<property name="sectionManager"
-			ref="org.sakaiproject.section.api.SectionManager" />			 
+			ref="org.sakaiproject.section.api.SectionManager" />			
+		<property name="emailService" ref="org.sakaiproject.email.api.EmailService" />	 
 	</bean>
 
 </beans>
