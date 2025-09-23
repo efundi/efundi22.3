@@ -37,7 +37,9 @@
 package org.sakaiproject.component.gradebook;
 
  import java.math.BigDecimal;
- import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
  import java.util.Collection;
  import java.util.Date;
  import java.util.HashMap;
@@ -73,16 +75,20 @@ package org.sakaiproject.component.gradebook;
  import org.sakaiproject.tool.gradebook.AbstractGradeRecord;
  import org.sakaiproject.tool.gradebook.GradebookAssignment;
  import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
- import org.sakaiproject.tool.gradebook.Category;
- import org.sakaiproject.tool.gradebook.Comment;
+import org.sakaiproject.tool.gradebook.AssignmentGradeRecordAudit;
+import org.sakaiproject.tool.gradebook.Category;
+import org.sakaiproject.tool.gradebook.CategoryAudit;
+import org.sakaiproject.tool.gradebook.Comment;
  import org.sakaiproject.tool.gradebook.CourseGrade;
  import org.sakaiproject.tool.gradebook.CourseGradeRecord;
  import org.sakaiproject.tool.gradebook.GradableObject;
- import org.sakaiproject.tool.gradebook.GradeMapping;
+import org.sakaiproject.tool.gradebook.GradableObjectAudit;
+import org.sakaiproject.tool.gradebook.GradeMapping;
  import org.sakaiproject.tool.gradebook.Gradebook;
  import org.sakaiproject.tool.gradebook.GradebookProperty;
  import org.sakaiproject.tool.gradebook.GradingEvent;
- import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
+import org.sakaiproject.tool.gradebook.IGradebookConstants;
+import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
  import org.sakaiproject.tool.gradebook.Permission;
  import org.sakaiproject.tool.gradebook.facades.Authn;
  import org.sakaiproject.event.api.EventTrackingService;
@@ -273,6 +279,10 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
 
 		session.evict(asnFromDb);
 		session.update(assignment);
+		
+		if(!assignment.equals(asnFromDb)) {
+            session.save(populateGradableObjectAudit(assignment, IGradebookConstants.UPDATED));
+		}
 	}
 
     protected AssignmentGradeRecord getAssignmentGradeRecord(final GradebookAssignment assignment, final String studentUid) throws HibernateException {
@@ -366,14 +376,43 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
             {
                 throw new ConflictingAssignmentNameException("You cannot save multiple assignments in a gradebook with the same name");
             }
+            
+            Long id = (Long) session.save(asn);
+            
+            // Create GradableObjectAudit
+            session.save(populateGradableObjectAudit(asn, IGradebookConstants.CREATED));
 
-            return (Long) session.save(asn);
+            return id;
         };
 
         return getHibernateTemplate().execute(hc);
     }
 
-    public void updateGradebook(final Gradebook gradebook) throws StaleObjectModificationException {
+    /**
+     * @param asn
+     * @param action
+     * @return
+     */
+    protected Object populateGradableObjectAudit(GradebookAssignment asn, String action) {
+    	GradableObjectAudit gradableObjectAudit = new GradableObjectAudit();
+        gradableObjectAudit.setName(asn.getName());
+        gradableObjectAudit.setParentGradableObject(asn);
+        gradableObjectAudit.setPointsPossible(asn.getPointsPossible());
+        gradableObjectAudit.setRemoved(asn.isRemoved());
+        gradableObjectAudit.setDueDate(asn.getDueDate());
+        gradableObjectAudit.setNotCounted(asn.isNotCounted());
+        gradableObjectAudit.setReleased(asn.isReleased());
+        gradableObjectAudit.setCategoryId(asn.getCategory() != null ? asn.getCategory().getId() : null);
+        gradableObjectAudit.setUngraded(asn.getUngraded());
+        gradableObjectAudit.setExtraCredit(asn.isExtraCredit());
+        gradableObjectAudit.setCountNullsAsZeros(asn.getCountNullsAsZeros());
+        gradableObjectAudit.setHideInAllGradesTable(asn.isHideInAllGradesTable());        
+        gradableObjectAudit.setAuditDatetime(new Date());
+        gradableObjectAudit.setAuditAction(action);
+		return gradableObjectAudit;
+	}
+
+	public void updateGradebook(final Gradebook gradebook) throws StaleObjectModificationException {
         final HibernateCallback hc = session -> {
             // Get the gradebook and selected mapping from persistence
             final Gradebook gradebookFromPersistence = (Gradebook)session.load(gradebook.getClass(), gradebook.getId());
@@ -518,6 +557,20 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
 
             final Long id = (Long) session.save(ca);
 
+            final CategoryAudit caAudit = new CategoryAudit();
+            caAudit.setParentCategory(ca);
+            caAudit.setName(name);
+            caAudit.setWeight(weight);
+            caAudit.setDropLowest(drop_lowest);
+            caAudit.setDropHighest(dropHighest);
+            caAudit.setKeepHighest(keepHighest);
+            caAudit.setRemoved(false);
+            caAudit.setExtraCredit(is_extra_credit);
+            caAudit.setEqualWeightAssignments(is_equal_weight);            
+            caAudit.setAuditDatetime(new Date());
+            caAudit.setAuditAction(IGradebookConstants.CREATED);
+            session.save(caAudit);
+            
             return id;
         };
 
@@ -586,6 +639,11 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
             }
             session.evict(persistentCat);
             session.update(category);
+            
+            if(!category.equals(persistentCat)) {
+                session.save(populateCategoryAudit(category, IGradebookConstants.UPDATED));
+            }
+    		
             return null;
         };
         try {
@@ -594,8 +652,31 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
     		throw new StaleObjectModificationException(e);
     	}
     }
+    
+    /**
+     * @param category
+     * @param action
+     * @return
+     */
+    private Object populateCategoryAudit(Category category, String action) {
+        final CategoryAudit caAudit = new CategoryAudit();
+        caAudit.setParentCategory(category);
+        caAudit.setName(category.getName());
+        caAudit.setWeight(category.getWeight());
+        caAudit.setDropLowest(category.getDropLowest());
+        caAudit.setDropHighest(category.getDropHighest());
+        caAudit.setKeepHighest(category.getKeepHighest());
+        caAudit.setRemoved(category.isRemoved());
+        caAudit.setExtraCredit(category.getIsExtraCredit());
+        caAudit.setEqualWeightAssignments(category.isEqualWeightAssignments());
+        caAudit.setUnweighted(category.isUnweighted());
+        caAudit.setEnforcePointWeighting(category.isEnforcePointWeighting());        
+        caAudit.setAuditDatetime(new Date());
+        caAudit.setAuditAction(action);
+		return caAudit;
+	}
 
-    public void removeCategory(final Long categoryId) throws StaleObjectModificationException{
+	public void removeCategory(final Long categoryId) throws StaleObjectModificationException{
     	final HibernateCallback hc = session -> {
             final Category persistentCat = (Category)session.load(Category.class, categoryId);
 
@@ -608,7 +689,23 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
             }
 
             persistentCat.setRemoved(true);
-            session.update(persistentCat);
+            session.update(persistentCat);            
+
+            final CategoryAudit caAudit = new CategoryAudit();
+            caAudit.setParentCategory(persistentCat);
+            caAudit.setName(persistentCat.getName());
+            caAudit.setWeight(persistentCat.getWeight());
+            caAudit.setDropLowest(persistentCat.getDropLowest());
+            caAudit.setDropHighest(persistentCat.getDropHighest());
+            caAudit.setKeepHighest(persistentCat.getKeepHighest());
+            caAudit.setRemoved(persistentCat.isRemoved());
+            caAudit.setExtraCredit(persistentCat.getIsExtraCredit());
+            caAudit.setEqualWeightAssignments(persistentCat.isEqualWeightAssignments());
+            caAudit.setUnweighted(persistentCat.isUnweighted());
+            caAudit.setEnforcePointWeighting(persistentCat.isEnforcePointWeighting());            
+            caAudit.setAuditDatetime(new Date());
+            caAudit.setAuditAction(IGradebookConstants.DELETED);
+            session.save(caAudit);
             return null;
         };
     	try {
@@ -845,8 +942,13 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
             if (isReleased != null) {
                 asn.setReleased(isReleased);
             }
+            
+            Long id = (Long) session.save(asn);
 
-            return (Long) session.save(asn);
+            // Create GradableObjectAudit
+            session.save(populateGradableObjectAudit(asn, IGradebookConstants.CREATED));
+            
+            return id;
         };
     	return getHibernateTemplate().execute(hc);
     }
@@ -880,8 +982,12 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
             if (isReleased != null) {
                 asn.setReleased(isReleased);
             }
+            
+            Long id = (Long) session.save(asn);
 
-            return (Long) session.save(asn);
+            // Create GradableObjectAudit
+            session.save(populateGradableObjectAudit(asn, IGradebookConstants.CREATED));
+            return id;
         };
 
     	return getHibernateTemplate().execute(hc);
@@ -1308,6 +1414,8 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
                     studentToGradeRecordMap.put(scoredGradeRecord.getStudentId(), scoredGradeRecord);
                 }
 
+                List<AssignmentGradeRecord> recordAddedList = new ArrayList<AssignmentGradeRecord>();
+                List<AssignmentGradeRecord> recordUpdatedList = new ArrayList<AssignmentGradeRecord>();
                 for (final String studentUid : studentUids) {
                     // SAK-11485 - We don't want to add scores for those grouped activities
                     //             that this student should not see or be scored on.
@@ -1318,16 +1426,24 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
                     if (gradeRecord != null) {
                         if (gradeRecord.getPointsEarned() == null) {
                             gradeRecord.setPointsEarned(0d);
+                            recordUpdatedList.add(gradeRecord);
                         } else {
                             continue;
                         }
                     } else {
                         gradeRecord = new AssignmentGradeRecord(assignment, studentUid, 0d);
+                        recordAddedList.add(gradeRecord);
                     }
                     gradeRecord.setGraderId(graderId);
                     gradeRecord.setDateRecorded(now);
                     session.saveOrUpdate(gradeRecord);
                     session.save(new GradingEvent(assignment, graderId, studentUid, gradeRecord.getPointsEarned()));
+                    recordUpdatedList.forEach(record -> {        	        	
+                    	session.save(populateGradeRecordAudit(record, IGradebookConstants.UPDATED));
+            		});
+                    recordAddedList.forEach(record -> {        	        	
+                    	session.save(populateGradeRecordAudit(record, IGradebookConstants.CREATED));
+            		});
                 }
             }
             return null;
@@ -1335,6 +1451,26 @@ public abstract class BaseHibernateManager extends HibernateDaoSupport {
     }
 
     /**
+     * 
+     * @param gradeRecord
+     * @param action
+     * @return
+     */
+    protected Object populateGradeRecordAudit(AssignmentGradeRecord gradeRecord, String action) {
+
+        final AssignmentGradeRecordAudit gradeRecordAudit = new AssignmentGradeRecordAudit();
+        gradeRecordAudit.setParentGradeRecord(gradeRecord);
+        gradeRecordAudit.setGraderId(gradeRecord.getGraderId());
+        gradeRecordAudit.setStudentId(gradeRecord.getStudentId());
+        gradeRecordAudit.setDateRecorded(gradeRecord.getDateRecorded());
+        gradeRecordAudit.setPointsEarned(gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned().toString() : null);
+        gradeRecordAudit.setExcludedFromGrade(gradeRecord.isExcludedFromGrade());
+        gradeRecordAudit.setAuditDatetime(new Date());
+        gradeRecordAudit.setAuditAction(action);
+		return gradeRecordAudit;
+	}
+
+	/**
      *
      * @param name the assignment name (will not be trimmed)
      * @param gradebook the gradebook to check

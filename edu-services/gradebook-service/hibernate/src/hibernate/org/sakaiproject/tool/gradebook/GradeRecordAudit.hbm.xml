@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-cascade="none"
+				   package="org.sakaiproject.tool.gradebook"
+				   default-lazy="false">
+
+	<class name="org.sakaiproject.tool.gradebook.AssignmentGradeRecordAudit" table="GB_GRADE_RECORD_AUDIT_T">
+
+		<id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_GRADE_RECORD_AUDIT_S</param>
+			</generator>
+		</id>
+		<many-to-one name="parentGradeRecord" column="PARENT_GRADE_RECORD_ID" class="org.sakaiproject.tool.gradebook.AssignmentGradeRecord" not-null="true" />
+		<property name="graderId" column="GRADER_ID" type="string" not-null="true"/>
+		<property name="studentId" column="STUDENT_ID" type="string" not-null="true"/>
+		<property name="dateRecorded" column="DATE_RECORDED" type="timestamp" not-null="true"/>
+		<property name="pointsEarned" column="POINTS_EARNED" type="string" not-null="false" />
+		<property name="excludedFromGrade" column="IS_EXCLUDED_FROM_GRADE" type="boolean" not-null="false"/>
+		<property name="auditDatetime" column="AUDIT_DATE_TIME" type="timestamp" not-null="true" />
+		<property name="auditAction" column="AUDIT_ACTION" type="string" not-null="true" />
+	</class>
+	
+</hibernate-mapping>

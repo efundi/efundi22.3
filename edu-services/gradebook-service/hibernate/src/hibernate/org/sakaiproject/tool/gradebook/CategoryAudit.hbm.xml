@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.sakaiproject.tool.gradebook"
+				   default-lazy="false"
+				   default-cascade="none">
+
+	<class name="org.sakaiproject.tool.gradebook.CategoryAudit" table="GB_CATEGORY_AUDIT_T">
+
+		<id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_CATEGORY_AUDIT_S</param>
+			</generator>
+		</id>
+
+		<many-to-one name="parentCategory" column="PARENT_CATEGORY_ID" class="org.sakaiproject.tool.gradebook.Category" not-null="true"/>
+
+		<property name="name" column="NAME" type="string" not-null="true"/>
+
+		<property name="weight" column="WEIGHT" type="double" not-null="false" />
+		
+		<property name="dropLowest" column="DROP_LOWEST" type="integer" not-null="false" />
+		
+		<property name="removed" column="REMOVED" type="boolean" />
+		
+		<property name="extraCredit" column="IS_EXTRA_CREDIT" type="boolean" not-null="false" />
+		
+		<property name="equalWeightAssignments" column="IS_EQUAL_WEIGHT_ASSNS" type="boolean" not-null="false" />
+   
+   		<property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false" />
+   
+   		<property name="enforcePointWeighting" column="ENFORCE_POINT_WEIGHTING" type="boolean" not-null="false" />
+   		
+   		<property name="dropHighest" column="DROP_HIGHEST" type="integer" not-null="false" />
+		
+		<property name="keepHighest" column="KEEP_HIGHEST" type="integer" not-null="false" />
+		
+		<property name="auditDatetime" column="AUDIT_DATE_TIME" type="timestamp" not-null="true" />
+		
+		<property name="auditAction" column="AUDIT_ACTION" type="string" not-null="true"/>
+	
+	</class>
+  
+</hibernate-mapping>

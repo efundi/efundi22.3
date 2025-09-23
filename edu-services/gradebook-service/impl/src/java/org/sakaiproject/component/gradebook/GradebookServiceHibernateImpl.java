@@ -96,6 +96,7 @@ import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradebookAssignment;
 import org.sakaiproject.tool.gradebook.GradingEvent;
+import org.sakaiproject.tool.gradebook.IGradebookConstants;
 import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 import org.sakaiproject.tool.gradebook.facades.Authz;
 import org.sakaiproject.util.ResourceLoader;
@@ -709,6 +710,8 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				if (log.isInfoEnabled()) {
 					log.info("GradebookAssignment " + asn.getName() + " has been removed from " + gradebook);
 				}
+		        // Create GradableObjectAudit
+		        session.save(populateGradableObjectAudit(asn, IGradebookConstants.DELETED));
 				return null;
 			}
 		};
@@ -731,6 +734,8 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				if (log.isInfoEnabled()) {
 					log.info("GradebookAssignment " + asn.getName() + " has been restored to " + gradebook);
 				}
+		        // Create GradableObjectAudit
+		        session.save(populateGradableObjectAudit(asn, IGradebookConstants.RESTORED));
 				return null;
 			}
 		};
@@ -2085,6 +2090,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 			final List<Comment> commentsToUpdate = new ArrayList<>();
 			final Set<GradingEvent> eventsToAdd = new HashSet<>();
 			final Set<AssignmentGradeRecord> gradeRecordsToUpdate = new HashSet<>();
+			final Set<AssignmentGradeRecord> gradeRecordsToCreate = new HashSet<>();
 			for (final GradeDefinition gradeDef : gradeDefList) {
 				final String studentId = gradeDef.getStudentUid();
 
@@ -2143,7 +2149,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 						gradeRec = new AssignmentGradeRecord(assignment, studentId, convertedGrade);
 						gradeRec.setGraderId(graderUid);
 						gradeRec.setDateRecorded(gradedDate);
-						gradeRecordsToUpdate.add(gradeRec);
+						gradeRecordsToCreate.add(gradeRec);
 						gradeRec.setExcludedFromGrade(excuse);
 
 						// Add a GradingEvent, which stores the actual input grade rather than the converted one
@@ -2184,8 +2190,13 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 
 			// Save or update the necessary items
 			try {
+				for (final AssignmentGradeRecord assignmentGradeRecord : gradeRecordsToCreate) {
+					getHibernateTemplate().saveOrUpdate(assignmentGradeRecord);
+					getHibernateTemplate().save(populateGradeRecordAudit(assignmentGradeRecord, IGradebookConstants.CREATED));
+				}
 				for (final AssignmentGradeRecord assignmentGradeRecord : gradeRecordsToUpdate) {
 					getHibernateTemplate().saveOrUpdate(assignmentGradeRecord);
+					getHibernateTemplate().save(populateGradeRecordAudit(assignmentGradeRecord, IGradebookConstants.UPDATED));
 				}
 				for (final Comment comment : commentsToUpdate) {
 					getHibernateTemplate().saveOrUpdate(comment);
@@ -2482,19 +2493,28 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 
 				final Date now = new Date();
 				final String graderId = getAuthn().getUserUid();
+                List<AssignmentGradeRecord> recordAddedList = new ArrayList<AssignmentGradeRecord>();
+                List<AssignmentGradeRecord> recordUpdatedList = new ArrayList<AssignmentGradeRecord>();
 				AssignmentGradeRecord gradeRecord = getAssignmentGradeRecord(assignment, studentUid);
 				if (gradeRecord == null) {
 					// Creating a new grade record.
 					gradeRecord = new AssignmentGradeRecord(assignment, studentUid, convertStringToDouble(score));
+					recordAddedList.add(gradeRecord);
 					// TODO: test if it's ungraded item or not. if yes, set ungraded grade for this record. if not, need validation??
 				} else {
 					// TODO: test if it's ungraded item or not. if yes, set ungraded grade for this record. if not, need validation??
 					gradeRecord.setPointsEarned(convertStringToDouble(score));
+					recordUpdatedList.add(gradeRecord);
 				}
 				gradeRecord.setGraderId(graderId);
 				gradeRecord.setDateRecorded(now);
 				session.saveOrUpdate(gradeRecord);
-
+				recordUpdatedList.forEach(record -> {        	        	
+                	session.save(populateGradeRecordAudit(record, IGradebookConstants.UPDATED));
+        		});
+                recordAddedList.forEach(record -> {        	        	
+                	session.save(populateGradeRecordAudit(record, IGradebookConstants.CREATED));
+        		});
 				session.save(new GradingEvent(assignment, graderId, studentUid, score));
 
 				// Sync database.
@@ -3843,6 +3863,10 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 		// save all
 		batchPersistEntities(gradeRecords);
 
+		gradeRecords.forEach(gradeRecord -> {
+			getHibernateTemplate().save(populateGradeRecordAudit(gradeRecord, IGradebookConstants.UPDATED));
+		});
+
 		// Insert the new grading events (GradeRecord)
 		for (final GradingEvent ge : eventsToAdd) {
 			getHibernateTemplate().persist(ge);
@@ -3901,5 +3925,13 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				.collect(Collectors.toList());
 		assignments.forEach(a -> a.setCounted(false));
 		batchPersistEntities(assignments);
+
+		final Session session = getSessionFactory().getCurrentSession();		
+		assignments.forEach(asn -> {
+			final GradebookAssignment asnDB = (GradebookAssignment) session.load(GradebookAssignment.class, asn.getId());
+			if(!asnDB.equals(asn)) {
+		        session.save(populateGradableObjectAudit(asn, IGradebookConstants.UPDATED));
+			}
+		});
 	}
 }

@@ -17,6 +17,7 @@ package org.sakaiproject.component.gradebook;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,11 +33,17 @@ import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.service.gradebook.shared.GradingScaleDefinition;
+import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
+import org.sakaiproject.tool.gradebook.AssignmentGradeRecordAudit;
+import org.sakaiproject.tool.gradebook.Category;
+import org.sakaiproject.tool.gradebook.CategoryAudit;
 import org.sakaiproject.tool.gradebook.CourseGrade;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.GradePointsMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.tool.gradebook.GradebookAssignment;
 import org.sakaiproject.tool.gradebook.GradingScale;
+import org.sakaiproject.tool.gradebook.IGradebookConstants;
 import org.sakaiproject.tool.gradebook.LetterGradeMapping;
 import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 import org.sakaiproject.tool.gradebook.LetterGradePlusMinusMapping;
@@ -327,6 +334,7 @@ public class GradebookFrameworkServiceImpl extends BaseHibernateManager implemen
 	}
 
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteGradebook(final String uid) throws GradebookNotFoundException {
 			log.debug("Deleting gradebook uid={} by userUid={}", uid, getUserUid());
@@ -362,16 +370,49 @@ public class GradebookFrameworkServiceImpl extends BaseHibernateManager implemen
         if (log.isDebugEnabled()) {
 			log.debug("Deleted {} grade records", numberDeleted);
 		}
+        toBeDeleted.forEach(record -> {        	        	
+        	AssignmentGradeRecord recordAudit = (AssignmentGradeRecord) record;
+        	final AssignmentGradeRecordAudit gradeRecordAudit = new AssignmentGradeRecordAudit();
+            gradeRecordAudit.setParentGradeRecord(recordAudit);
+            gradeRecordAudit.setGraderId(recordAudit.getGraderId());
+            gradeRecordAudit.setStudentId(recordAudit.getStudentId());
+            gradeRecordAudit.setDateRecorded(recordAudit.getDateRecorded());
+            gradeRecordAudit.setPointsEarned(recordAudit.getPointsEarned() != null ? recordAudit.getPointsEarned().toString() : null);
+            gradeRecordAudit.setExcludedFromGrade(recordAudit.isExcludedFromGrade());
+            gradeRecordAudit.setAuditDatetime(new Date());
+            gradeRecordAudit.setAuditAction(IGradebookConstants.DELETED);
+            hibTempl.save(gradeRecordAudit);
+		});
 
         toBeDeleted = hibTempl.findByNamedParam("from GradableObject as go where go.gradebook.id = :gradebookid", "gradebookid", gradebookId);
         numberDeleted = toBeDeleted.size();
         hibTempl.deleteAll(toBeDeleted);
         log.debug("Deleted {} gradable objects", numberDeleted);
+        toBeDeleted.forEach(asn -> {        	
+        	GradebookAssignment assignment = (GradebookAssignment) asn;
+            hibTempl.save(populateGradableObjectAudit(assignment, IGradebookConstants.DELETED));
+		});
 
         toBeDeleted = hibTempl.findByNamedParam("from Category as cg where cg.gradebook.id = :gradebookid", "gradebookid", gradebookId);
-        numberDeleted = toBeDeleted.size();
+        numberDeleted = toBeDeleted.size();        
         hibTempl.deleteAll(toBeDeleted);
-        log.debug("Deleted {} gradable categories", numberDeleted);
+        log.debug("Deleted {} gradable categories", numberDeleted);        
+        toBeDeleted.forEach(cat -> {
+        	Category category = (Category) cat;
+            final CategoryAudit caAudit = new CategoryAudit();
+            caAudit.setParentCategory(category);
+            caAudit.setName(category.getName());
+            caAudit.setWeight(category.getWeight());
+            caAudit.setDropLowest(category.getDropLowest());
+            caAudit.setDropHighest(category.getDropHighest());
+            caAudit.setKeepHighest(category.getKeepHighest());
+            caAudit.setRemoved(category.isRemoved());
+            caAudit.setExtraCredit(category.isExtraCredit());
+            caAudit.setEqualWeightAssignments(category.isEqualWeightAssignments());
+            caAudit.setAuditDatetime(new Date());
+            caAudit.setAuditAction(IGradebookConstants.DELETED);
+            hibTempl.save(caAudit);
+		});
 
         final Gradebook gradebook = hibTempl.load(Gradebook.class, gradebookId);
         gradebook.setSelectedGradeMapping(null);

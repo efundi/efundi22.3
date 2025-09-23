@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
@@ -490,4 +491,28 @@ public class Category implements Serializable {
 		this.totalPointsPossible = pointsPossible;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof Category))
+			return false;
+
+		Category category = (Category) o;
+
+		return removed == category.isRemoved() && Objects.equals(name, category.getName())
+				&& Objects.equals(weight, category.getWeight()) && Objects.equals(dropLowest, category.getDropLowest())
+				&& Objects.equals(dropHighest, category.getDropHighest())
+				&& Objects.equals(keepHighest, category.getKeepHighest())
+				&& Objects.equals(extraCredit, category.isExtraCredit())
+				&& Objects.equals(unweighted, category.isUnweighted())
+				&& Objects.equals(equalWeightAssignments, category.isEqualWeightAssignments())
+				&& Objects.equals(enforcePointWeighting, category.isEnforcePointWeighting());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, weight, dropLowest, dropHighest, keepHighest, removed, extraCredit, unweighted,
+				equalWeightAssignments, enforcePointWeighting);
+	}	
 }

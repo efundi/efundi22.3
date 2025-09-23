@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-cascade="none"
+	package="org.sakaiproject.tool.gradebook"
+	default-lazy="false">
+	
+	<class name="org.sakaiproject.tool.gradebook.GradableObjectAudit" table="GB_GRADABLE_OBJECT_AUDIT_T">
+		<id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_GRADABLE_OBJECT_AUDIT_S</param>
+			</generator>
+		</id>
+		<many-to-one name="parentGradableObject" column="PARENT_GRADABLE_OBJECT_ID" class="org.sakaiproject.tool.gradebook.GradebookAssignment" not-null="true" />
+		<property name="name" column="NAME" type="string" not-null="true" />
+		<property name="removed" column="REMOVED" type="boolean" />
+		<property name="pointsPossible" column="POINTS_POSSIBLE" type="java.lang.Double" />
+		<property name="dueDate" column="DUE_DATE" type="timestamp" />
+		<property name="notCounted" column="NOT_COUNTED" type="java.lang.Boolean" />
+		<property name="extraCredit" column="IS_EXTRA_CREDIT" type="java.lang.Boolean" />
+		<property name="released" column="RELEASED" type="java.lang.Boolean" />
+		<property name="categoryId" column="CATEGORY_ID" type="java.lang.Long" />		
+		<property name="ungraded" column="UNGRADED" type="java.lang.Boolean" />
+		<property name="countNullsAsZeros" column="IS_NULL_ZERO" type="java.lang.Boolean" />
+		<property name="hideInAllGradesTable" column="HIDE_IN_ALL_GRADES_TABLE" type="java.lang.Boolean" />
+		<property name="auditDatetime" column="AUDIT_DATE_TIME" type="timestamp" not-null="true" />
+		<property name="auditAction" column="AUDIT_ACTION" type="string" not-null="true" />
+	</class>
+</hibernate-mapping>

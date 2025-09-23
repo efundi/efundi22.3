@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Objects;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -544,5 +545,29 @@ public class GradebookAssignment extends GradableObject {
 
 	public boolean isHideInAllGradesTable() {
 		return this.hideInAllGradesTable != null ? this.hideInAllGradesTable : false;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof GradebookAssignment))
+			return false;
+
+		GradebookAssignment other = (GradebookAssignment) o;
+		return removed == other.isRemoved() && Objects.equals(name, other.getName())
+				&& Objects.equals(pointsPossible, other.getPointsPossible())
+				&& Objects.equals(dueDate, other.getDueDate()) && Objects.equals(notCounted, other.isNotCounted())
+				&& Objects.equals(released, other.isReleased())
+				&& Objects.equals(category != null ? category.getId() : null, other.getCategory() != null ? other.getCategory().getId() : null)
+				&& Objects.equals(ungraded, other.getUngraded()) && Objects.equals(extraCredit, other.isExtraCredit())
+				&& Objects.equals(countNullsAsZeros, other.getCountNullsAsZeros())
+				&& Objects.equals(hideInAllGradesTable, other.isHideInAllGradesTable());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(removed, name, pointsPossible, dueDate, notCounted, released, category != null ? category.getId() : null, ungraded,
+				extraCredit, countNullsAsZeros, hideInAllGradesTable);
 	}
 }

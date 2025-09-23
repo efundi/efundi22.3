@@ -10,7 +10,9 @@
 		    <list>
   				<value>org/sakaiproject/tool/gradebook/Gradebook.hbm.xml</value>
 	  			<value>org/sakaiproject/tool/gradebook/GradableObject.hbm.xml</value>
+	  			<value>org/sakaiproject/tool/gradebook/GradableObjectAudit.hbm.xml</value>
 		  		<value>org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml</value>
+		  		<value>org/sakaiproject/tool/gradebook/GradeRecordAudit.hbm.xml</value>
 			  	<value>org/sakaiproject/tool/gradebook/GradingEvent.hbm.xml</value>
 				<value>org/sakaiproject/tool/gradebook/GradingScale.hbm.xml</value>
   				<value>org/sakaiproject/tool/gradebook/GradebookProperty.hbm.xml</value>
@@ -18,6 +20,7 @@
           		<value>org/sakaiproject/tool/gradebook/Spreadsheet.hbm.xml</value>
           		<value>org/sakaiproject/tool/gradebook/Comment.hbm.xml</value>
           		<value>org/sakaiproject/tool/gradebook/Category.hbm.xml</value>
+          		<value>org/sakaiproject/tool/gradebook/CategoryAudit.hbm.xml</value>
           		<value>org/sakaiproject/tool/gradebook/LetterGradePercenteMapping.hbm.xml</value>
           		<value>org/sakaiproject/tool/gradebook/Permission.hbm.xml</value>
         		</list>
