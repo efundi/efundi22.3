@@ -203,6 +203,17 @@ public class QTIService implements QTIServiceAPI
     }
   }
 
+	public Document getExportedPublishedAssessment(String publishedAssessmentId, int qtiVersion) {
+		testQtiVersion(qtiVersion);
+
+		try {
+			AuthoringHelper helper = new AuthoringHelper(qtiVersion);
+			return helper.getPublishedAssessment(publishedAssessmentId);
+		} catch (Exception ex) {
+			throw new QTIServiceException(ex);
+		}
+	}
+  
   /**
    * Get an assessment in String form.
    *
@@ -217,6 +228,9 @@ public class QTIService implements QTIServiceAPI
       return XmlUtil.getDOMString(getExportedAssessment(assessmentId, qtiVersion));
   }
 
+	public String getExportedPublishedAssessmentAsString(String publishedAssessmentId, int qtiVersion) {
+		return XmlUtil.getDOMString(getExportedPublishedAssessment(publishedAssessmentId, qtiVersion));
+	}
 
   /**
    * Get an item in Document form.
