@@ -1,4 +1,4 @@
-# SIS Integration Sakai Collaboration and Learning Environment (Sakai CLE) v3 2025
+# SIS Integration Sakai Collaboration and Learning Environment (Sakai CLE) v3 2026 And migrating to Brightspace
 
 This is the source code for the Sakai CLE..
 
