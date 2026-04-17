@@ -18,6 +18,7 @@ velocity.log
 node_modules
 webcomponents/tool/src/main/frontend/dist
 webcomponents/tool/src/main/frontend/assets
+scorm/scorm-tool/contentPackages
 rubrics/tool/src/main/frontend
 bower_components
 rebel.xml
