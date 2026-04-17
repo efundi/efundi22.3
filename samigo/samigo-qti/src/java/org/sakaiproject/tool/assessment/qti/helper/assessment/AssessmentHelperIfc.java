@@ -30,6 +30,7 @@ import org.sakaiproject.tool.assessment.data.ifc.assessment.AssessmentFeedbackIf
 import org.sakaiproject.tool.assessment.data.ifc.assessment.EvaluationModelIfc;
 import org.sakaiproject.tool.assessment.facade.AssessmentFacade;
 import org.sakaiproject.tool.assessment.qti.asi.Assessment;
+import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacade;
 import java.util.Set;
 
 /**
@@ -84,6 +85,9 @@ public interface AssessmentHelperIfc
   public void updateMetaData(Assessment assessmentXml,
                              AssessmentFacade assessment);
 
+  public void updateMetaData(Assessment assessmentXml,
+          PublishedAssessmentFacade assessment);
+  
   /**
    * Set the assessment description.
    * This is valid for all undelimited single item texts.
